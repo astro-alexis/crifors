@@ -151,6 +151,8 @@ class Simulator(object):
         log.info("Initializing source PSF: %s", self.psf)
         if self.psf == "gaussian":
             return self.psf_gaussian
+        elif self.psf == "uniform":
+            return self.psf_uniform
 
     def init_raytrace(self):
         log.info("Initializing raytracing model: %s", self.model)
@@ -270,8 +272,15 @@ class Simulator(object):
 
 
     def psf_uniform(self, nrays):
-        pass
-
+        return slit.slit_uniform_psf(\
+            int(nrays),
+            self.seeing,
+            self.mu_x_psf,
+            self.mu_y_psf,
+            self.tau_s0,
+            self.slit_width,
+            self.slit_height,
+            )
 
     def psf_point(self, offset=None):
         pass
