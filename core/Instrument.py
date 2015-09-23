@@ -44,6 +44,7 @@ _cl = {
     "nruns" : "--nruns",
     "outfn" : "--outfn",
     "psf" : "--psf",
+    "plot_psf":"--plot-psf",
     "rv" : "--rv",
     "seeing" : "--seeing",
     "slit_width" : "--slit-width",

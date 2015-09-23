@@ -268,7 +268,8 @@ class Simulator(object):
         tau = self.tau_s0
         sw = self.slit_width
         sh = self.slit_height
-        return slit.slit_gaussian_psf(n, mux, muy, sigx, sigy, tau, sw, sh)
+        return slit.slit_gaussian_psf(n, mux, muy, sigx, sigy, tau, sw, sh,
+            plot=self.plot_psf)
 
 
     def psf_uniform(self, nrays):
@@ -280,13 +281,14 @@ class Simulator(object):
             self.tau_s0,
             self.slit_width,
             self.slit_height,
+            plot=self.plot_psf,
             )
 
     def psf_point(self, offset=None):
         pass
 
 
-    # ======================[ spectrum mtehods ]===============================
+    # ======================[ spectrum methods ]===============================
 
 
     def initialize_spectrum(self):

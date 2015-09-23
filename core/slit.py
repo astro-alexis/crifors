@@ -135,9 +135,11 @@ def slit_uniform_psf(n, seeing, mu_x, mu_y, tau_0, slit_width, slit_height, plot
         import matplotlib.pylab as plt
         fig = plt.figure()
         ax = fig.add_subplot(111)#, aspect='equal')
-        ax.scatter(slit_x, slit_y, s=20, edgecolor=None)
+        #ax.scatter(slit_x, slit_y, s=20, edgecolor=None)
+        ax.hexbin(slit_x, slit_y)
         plt.title("0D Point Source PSF")
         plt.show()
+        sys.exit()
     return slit_x, slit_y
 
 
@@ -199,9 +201,11 @@ def slit_gaussian_psf(n, mu_x, mu_y, sig_x, sig_y, tau_0, slit_width, slit_heigh
         import matplotlib.pylab as plt
         fig = plt.figure()
         ax = fig.add_subplot(111)#, aspect='equal')
-        ax.scatter(slit_x, slit_y, s=20, edgecolor=None)
+        #ax.scatter(slit_x, slit_y, s=20, lw=0, alpha=0.5)
+        ax.hexbin(slit_x,slit_y)
         plt.title("2D Gaussian PSF")
         plt.show()
+        sys.exit()
     return slit_x, slit_y
 
 
