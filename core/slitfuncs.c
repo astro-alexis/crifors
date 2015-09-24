@@ -47,10 +47,6 @@ inline double cradians(double angle) {
 
 void slit_uniform_psf(
     const int n,
-    const double seeing,
-    const double mu_x,
-    const double mu_y,
-    const double tau_0,
     const double slit_width,
     const double slit_height,
     double* restrict x_out,
@@ -59,8 +55,6 @@ void slit_uniform_psf(
   int i;
   double x;
   double y;
-  const double tau = cradians(tau_0);
-  const double r2 = 0.25*seeing*seeing;
   const double sw = slit_width * 0.5;
   const double sh = slit_height * 0.5;
   long seed = time(NULL);
@@ -71,18 +65,14 @@ void slit_uniform_psf(
     // CIRCLE + SLIT FILTER
     cond = 0;
     while (cond != 1) {
-      x = gsl_rng_uniform(rng) * seeing - seeing*0.5;
-      y = gsl_rng_uniform(rng) * seeing - seeing*0.5;
-      if (x*x + y*y < r2) {
-        x += mu_x;
-        y += mu_y;
-        if (x < sw && x > -sw && y < sh && y > -sh)
-          cond = 1;
+      x = gsl_rng_uniform(rng) * 2*sw - sw;
+      y = gsl_rng_uniform(rng) * 2*sh - sh;
+      if (x < sw && x > -sw && y < sh && y > -sh)
+        cond = 1;
       }
-    }
     // ROTATE
-    x_out[i] = x * cos(tau) + y * sin(tau);
-    y_out[i] = -x * sin(tau) + y * cos(tau);
+    x_out[i] = x;
+    y_out[i] = y;
     progress_bar(i, n);
   }
 	printf("\n");

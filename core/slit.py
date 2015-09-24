@@ -79,22 +79,14 @@ def point_source(yoffset=0.0, plot=False):
     return slit
 
 
-def slit_uniform_psf(n, seeing, mu_x, mu_y, tau_0, slit_width, slit_height, plot=False):
-    """Returns x- and y- coordinate arrays of a 2D random uniformly distributed
-    circle.
+def slit_uniform_psf(n, slit_width, slit_height, plot=False):
+    """Returns x- and y- coordinate arrays of a "D random uniformly distributed
+    fully filled slit.
 
     Parameters
     ----------
     n : int
         Size of coordinate arrays.
-    seeing: double
-        Seeing of source psf in arcseconds.
-    mu_x : double
-        Center of PSF in x-coords.
-    mu_y : double
-        Center of PSF in y-coords.
-    tau_0 : double
-        Rotation about z-axis (tilt).
     slit_width : double
         Width of slit in arcseconds.
     slit_height : double
@@ -108,8 +100,6 @@ def slit_uniform_psf(n, seeing, mu_x, mu_y, tau_0, slit_width, slit_height, plot
         Array of y-coordinates.
 
     """
-    desc = "Source psf: uniform, mux=%.2f muy=%.2f seeing=%.2f arcsec" % (mu_x, mu_y, seeing)
-    log.info(desc)
     # initialize output arrays to send to c function
     slit_x = np.empty(n, dtype=np.float64)
     slit_y = np.empty(n, dtype=np.float64)
@@ -118,24 +108,19 @@ def slit_uniform_psf(n, seeing, mu_x, mu_y, tau_0, slit_width, slit_height, plot
     func = ci.slitc.slit_uniform_psf
     func.argtypes = [
         ct.c_int,             # n
-        ct.c_double,          # seeing
-        ct.c_double,          # mu_x
-        ct.c_double,          # mu_y
-        ct.c_double,          # tau_0
         ct.c_double,          # slit_width
         ct.c_double,          # slit_height
         ci.array_1d_double,   # slit_x
         ci.array_1d_double]   # slit_y
     func.restype = None
     log.info("Slit Rejection Sampling: %s rays...", n)
-    func(n, seeing, mu_x, mu_y, tau_0, slit_width, slit_height, slit_x, slit_y)
+    func(n, slit_width, slit_height, slit_x, slit_y)
     # preview slit
     if plot:
         log.info("Opening preview plot of 2D uniformly random psf.")
         import matplotlib.pylab as plt
         fig = plt.figure()
-        ax = fig.add_subplot(111)#, aspect='equal')
-        #ax.scatter(slit_x, slit_y, s=20, edgecolor=None)
+        ax = fig.add_subplot(111)
         ax.hexbin(slit_x, slit_y)
         plt.title("0D Point Source PSF")
         plt.show()

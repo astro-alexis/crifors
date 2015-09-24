@@ -275,10 +275,6 @@ class Simulator(object):
     def psf_uniform(self, nrays):
         return slit.slit_uniform_psf(\
             int(nrays),
-            self.seeing,
-            self.mu_x_psf,
-            self.mu_y_psf,
-            self.tau_s0,
             self.slit_width,
             self.slit_height,
             plot=self.plot_psf,
