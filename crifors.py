@@ -190,6 +190,11 @@ def main():
     if args["--noise"]:
         core.add_noise(simulator)
 
+    t1 = time.time()
+    d1 = time.strftime("%Y-%m-%d_%H.%M.%S", time.gmtime())
+    log.info("End time: %s", d1)
+    log.info("Run time: %.1f s", t1-t0)
+
     if args["--plot"]:
         log.info("Opening plot...")
         import matplotlib.pyplot as plt
@@ -204,13 +209,9 @@ def main():
         ax2.set_ylabel("PDF")
         plt.tight_layout()
         plt.show()
-    t1 = time.time()
-    d1 = time.strftime("%Y-%m-%d_%H.%M.%S", time.gmtime())
-    log.info("End time: %s", d1)
-    log.info("Run time: %.1f s", t1-t0)
-
-    # WRITE TO FITS FILE
-    core.write_to_fits(simulator)
+    else:
+        # WRITE TO FITS FILE
+        core.write_to_fits(simulator)
 
     # SPAWN FITS OUTPUT IMAGE IN SAO-DS9
     if args["--ds9"]:
