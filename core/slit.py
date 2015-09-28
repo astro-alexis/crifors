@@ -79,7 +79,7 @@ def point_source(yoffset=0.0, plot=False):
     return slit
 
 
-def slit_uniform_psf(n, slit_width, slit_height, plot=False):
+def slit_uniform_psf(n, slit_width, slit_height, decker=0, plot=False):
     """Returns x- and y- coordinate arrays of a "D random uniformly distributed
     fully filled slit.
 
@@ -105,7 +105,17 @@ def slit_uniform_psf(n, slit_width, slit_height, plot=False):
     slit_y = np.empty(n, dtype=np.float64)
     slit_x = np.require(slit_x, requirements=ci.req_out, dtype=np.float64)
     slit_y = np.require(slit_y, requirements=ci.req_out, dtype=np.float64)
-    func = ci.slitc.slit_uniform_psf
+
+    if decker==1:
+        func = ci.slitc.slit_decker1_psf
+        log.info('Decker 1 chosen')
+    elif decker==2:
+        func = ci.slitc.slit_decker2_psf
+        log.info('Decker 2 chosen')
+    else:
+        func = ci.slitc.slit_uniform_psf
+        log.info('No decker chosen')
+
     func.argtypes = [
         ct.c_int,             # n
         ct.c_double,          # slit_width

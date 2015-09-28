@@ -150,9 +150,40 @@ class Simulator(object):
     def init_slitfunc(self):
         log.info("Initializing source PSF: %s", self.psf)
         if self.psf == "gaussian":
-            return self.psf_gaussian
+            return lambda nrays: slit.slit_gaussian_psf(\
+                int(nrays),
+                self.mu_x_psf,
+                self.mu_y_psf,
+                self.sig_x_psf,
+                self.sig_y_psf,
+                self.tau_s0,
+                self.slit_width,
+                self.slit_height,
+                plot=self.plot_psf,
+                )
         elif self.psf == "uniform":
-            return self.psf_uniform
+            return lambda nrays: slit.slit_uniform_psf(\
+                int(nrays),
+                self.slit_width,
+                self.slit_height,
+                plot=self.plot_psf,
+                )
+        elif self.psf == "decker1":
+            return lambda nrays: slit.slit_uniform_psf(\
+                int(nrays),
+                self.slit_width,
+                self.slit_height,
+                decker=1,
+                plot=self.plot_psf,
+                )
+        elif self.psf == "decker2":
+            return lambda nrays: slit.slit_uniform_psf(\
+                int(nrays),
+                self.slit_width,
+                self.slit_height,
+                decker=2,
+                plot=self.plot_psf,
+                )
 
     def init_raytrace(self):
         log.info("Initializing raytracing model: %s", self.model)
@@ -254,34 +285,6 @@ class Simulator(object):
             ydl_0, ydm_0, ydr_0, tau_dl, tau_dm, tau_dr, slit_ratio, n, cn, wl,
             xbot, xmid, xtop, ybot, ymid, ytop, phi, waves, slit_x, slit_y,
             self.outarr)
-
-
-    # =========================[ slit methods ]================================
-
-
-    def psf_gaussian(self, nrays):
-        n = int(nrays)
-        mux = self.mu_x_psf
-        muy = self.mu_y_psf
-        sigx = self.sig_x_psf
-        sigy = self.sig_y_psf
-        tau = self.tau_s0
-        sw = self.slit_width
-        sh = self.slit_height
-        return slit.slit_gaussian_psf(n, mux, muy, sigx, sigy, tau, sw, sh,
-            plot=self.plot_psf)
-
-
-    def psf_uniform(self, nrays):
-        return slit.slit_uniform_psf(\
-            int(nrays),
-            self.slit_width,
-            self.slit_height,
-            plot=self.plot_psf,
-            )
-
-    def psf_point(self, offset=None):
-        pass
 
 
     # ======================[ spectrum methods ]===============================

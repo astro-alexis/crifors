@@ -79,6 +79,74 @@ void slit_uniform_psf(
   gsl_rng_free(rng);
 }
 
+void slit_decker1_psf(
+    const int n,
+    const double slit_width,
+    const double slit_height,
+    double* restrict x_out,
+    double* restrict y_out) {
+  int cond;
+  int i;
+  double x;
+  double y;
+  const double sw = slit_width * 0.5;
+  const double sh = slit_height * 0.5;
+  long seed = time(NULL);
+  gsl_rng* rng = gsl_rng_alloc(gsl_rng_taus);   /* global rng generator */
+  gsl_rng_set(rng, seed);                       /* seed the rng */
+
+  for (i=0; i<n; ++i) {
+    // CIRCLE + SLIT FILTER
+    cond = 0;
+    while (cond != 1) {
+      x = gsl_rng_uniform(rng) * 2*sw - sw;
+      y = gsl_rng_uniform(rng) * 2*sh - sh;
+      if (x < sw && x > -sw && ((y < sh && y > sh/2) || (y<0 && y> -sh/2)))
+        cond = 1;
+      }
+    // ROTATE
+    x_out[i] = x;
+    y_out[i] = y;
+    progress_bar(i, n);
+  }
+	printf("\n");
+  gsl_rng_free(rng);
+}
+
+
+void slit_decker2_psf(
+    const int n,
+    const double slit_width,
+    const double slit_height,
+    double* restrict x_out,
+    double* restrict y_out) {
+  int cond;
+  int i;
+  double x;
+  double y;
+  const double sw = slit_width * 0.5;
+  const double sh = slit_height * 0.5;
+  long seed = time(NULL);
+  gsl_rng* rng = gsl_rng_alloc(gsl_rng_taus);   /* global rng generator */
+  gsl_rng_set(rng, seed);                       /* seed the rng */
+
+  for (i=0; i<n; ++i) {
+    // CIRCLE + SLIT FILTER
+    cond = 0;
+    while (cond != 1) {
+      x = gsl_rng_uniform(rng) * 2*sw - sw;
+      y = gsl_rng_uniform(rng) * 2*sh - sh;
+      if (x < sw && x > -sw && ((y < sh/2 && y > 0) || (y < -sh/2 && y > -sh)))
+        cond = 1;
+      }
+    // ROTATE
+    x_out[i] = x;
+    y_out[i] = y;
+    progress_bar(i, n);
+  }
+	printf("\n");
+  gsl_rng_free(rng);
+}
 
 void slit_gaussian_psf(
     const int n,
