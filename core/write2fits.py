@@ -118,6 +118,7 @@ def add_simulation_keywords(header, sim):
     header['HIERARCH ESO SIMU MIN NRAYS'] = (sim.min_rays_per_pixel, 'Min rays per raw pixel')
     header['HIERARCH ESO SIMU MAX NRAYS'] = (sim.max_rays_per_pixel, 'Max rays per raw pixel')
     header['HIERARCH ESO SIMU TOT NRAYS'] = (sim.nrays_tot, 'Total rays at detector')
+    header['HIERARCH ESO SIMU DPIX'] = (sim.dpix, '[mm/pix] Detector pixel scale')
     header['HIERARCH ESO SIMU DL ID'] = (sim.dl_id, 'Left detector ID')
     header['HIERARCH ESO SIMU DL XD0'] = (sim.xdl, 'Left detector x-offset')
     header['HIERARCH ESO SIMU DL YD0'] = (sim.ydl, 'Left detector y-offset')
