@@ -161,6 +161,18 @@ class Simulator(object):
                 self.slit_height,
                 plot=self.plot_psf,
                 )
+        if self.psf == "polarimeter":
+            return lambda nrays: slit.slit_polarimeter_psf(\
+                int(nrays),
+                self.mu_x_psf,
+                self.mu_y_psf,
+                self.sig_x_psf,
+                self.sig_y_psf,
+                self.tau_s0,
+                self.slit_width,
+                self.slit_height,
+                plot=self.plot_psf,
+                )
         elif self.psf == "uniform":
             return lambda nrays: slit.slit_uniform_psf(\
                 int(nrays),
@@ -373,6 +385,16 @@ class Simulator(object):
         else:
             log.exception("Please specify a real input filename.", exc_info=True)
             sys.exit(0)
+
+    def import_polarimeter(self):
+        """read the files that define the wavelength dependance of the polarimeter"""
+        fname = pol_fn % self.band
+        log.info("Reading polarimeter info from %s"%fname)
+        order,left,middle,right = np.loadtxt(fname,unpack=True)
+        self.pol_inter = {}
+        x = [1,2,3] # temporary - set to left right and middle wavelength
+        for o,l,m,r in zip(order,left,middle,right):
+            self.pol_inter[o] = scipy.interpolate.interp1d(y,[l,m,r],kind='quadratic')
 
 
     def phx_model(self, plot=False):

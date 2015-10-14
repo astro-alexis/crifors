@@ -203,6 +203,33 @@ def slit_gaussian_psf(n, mu_x, mu_y, sig_x, sig_y, tau_0, slit_width, slit_heigh
         sys.exit()
     return slit_x, slit_y
 
+def slit_polarimeter_psf(n, mu_x, mu_y, sig_x, sig_y, tau_0, slit_width, slit_height, plot=False):
+    """uses the Gaussian PSF and adds two of them"""
+
+    slit_x1, slit_y1 = slit_gaussian_psf(\
+                n //2 + n%2,
+                mu_x,
+                mu_y - (slit_height/4),
+                sig_x,
+                sig_y,
+                tau_0,
+                slit_width,
+                slit_height,
+                plot=plot,
+                )
+    slit_x2, slit_y2 = slit_gaussian_psf(\
+                n //2,
+                mu_x,
+                mu_y + (slit_height/4),
+                sig_x,
+                sig_y,
+                tau_0,
+                slit_width,
+                slit_height,
+                plot=plot,
+                )
+    return np.concatenate((slit_x1,slit_x2)), np.concatenate((slit_y1,slit_y2)),
+
 
 # ==============================[ TESTS ]======================================
 
