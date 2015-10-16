@@ -9,6 +9,9 @@ DETSIZE = 2048
 DETNAME = ['DL','DM','DR']
 SIMHEAD = 'HIERARCH ESO SIMU '
 
+fig = plt.figure(figsize=(12,4))
+plt.subplots_adjust(0.01,0.01,0.99,0.99,0,0)
+
 if len(sys.argv) < 2:
     # if no file given, use the latest in output/
     SCRIPTDIR = os.path.dirname(os.path.realpath(__file__))
@@ -41,5 +44,6 @@ for i,h in enumerate(hdulist[1:]):
                 ))
 
 plt.axis('off')
-plt.axis((0, DETSIZE*3, 0, DETSIZE))
+MARGIN = DETSIZE*0.04
+plt.axis((0-MARGIN, DETSIZE*3 + MARGIN, 0-MARGIN, DETSIZE+MARGIN))
 plt.show()
