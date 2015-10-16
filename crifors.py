@@ -10,7 +10,7 @@ Usage:
                [--model=MODEL] [--nrays=NRAYS] [--nruns=NRUNS] [--outfn=OUTFN]
                [--plot | --plot-psf | plot-simple] [--psf=PSF] [--rv=RV]
                [--seeing=SEEING] [--slit-width=SLIT] [--verbose=LEVEL]
-               [--spread]
+               [--spread] [--polarimeter]
     crifors.py [-h] | [--help] | [--version]
 
 Arguments:
@@ -37,6 +37,7 @@ Simulation options:
     --seeing=SEEING    seeing in arcseconds [Default: 1.5]
     --slit-width=SLIT  width of slit in arcseconds [Default: 0.2]
     --spread           spread out each ray by convolving with a kernel
+    --polarimeter      duplicate each ray with beam splitter separation
 
 Other options:
     --config=CONFIG    simulation config file
@@ -123,6 +124,8 @@ Option details:
 --slit-width=SLIT
     Width of slit in arcseconds (0.2, 0.4)
 --spread
+    tbw
+--polarimeter
     tbw
 
 Examples:

@@ -51,6 +51,7 @@ _cl = {
     "source" : "SOURCE",
     "telluric" : "--telluric",
     "spread" : "--spread",
+    "polarimeter" : "--polarimeter",
     }
 
 

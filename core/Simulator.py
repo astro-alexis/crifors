@@ -3,7 +3,7 @@
 Simulator class.
 """
 import numpy as np
-from scipy.interpolate import InterpolatedUnivariateSpline
+from scipy.interpolate import InterpolatedUnivariateSpline, interp1d
 import scipy.integrate
 import scipy.ndimage.filters
 from astropy.io import fits
@@ -71,6 +71,10 @@ class Simulator(object):
         self.min_rays_per_pixel = 0
         self.max_rays_per_pixel = 0
 
+        # READ POLARIMETER PARAMETERS IF NECESSARY
+        if self.polarimeter:
+                self.import_polarimeter()
+
 
     def run(self):
         """
@@ -111,6 +115,13 @@ class Simulator(object):
 
             # pre sample slit
             slit_x, slit_y = self.slitfunc(mnrays)
+
+            # polarimeter
+            if self.polarimeter:
+                slit_x, slit_y = self.polarimeter_shift(m, waves_in, slit_x, slit_y)
+                print dir(self)
+                print self.wmin,self.wmax,self.wl_range_min,self.wl_range_max
+
             # normalize to unity
             slit_x /= self.slit_height
             slit_y /= self.slit_height
@@ -161,7 +172,7 @@ class Simulator(object):
                 self.slit_height,
                 plot=self.plot_psf,
                 )
-        if self.psf == "polarimeter":
+        elif self.psf == "polarimeter":
             return lambda nrays: slit.slit_polarimeter_psf(\
                 int(nrays),
                 self.mu_x_psf,
@@ -202,7 +213,21 @@ class Simulator(object):
         if self.model == "interp":
             return self.interp
 
+    def import_polarimeter(self):
+        """read the files that define the wavelength dependance of the polarimeter"""
+        fname = pol_path % self.band
+        log.info("Reading polarimeter info from %s"%fname)
+        order,left,middle,right = np.loadtxt(fname,unpack=True)
+        self.pol_interp = {}
+        x = [0,1,10] # temporary - set to left right and middle wavelength
+        for o,l,m,r in zip(order,left,middle,right):
+            self.pol_interp[int(o)] = scipy.interpolate.interp1d(x,[l,m,r],kind='linear')
+
     # =========================[ model methods ]===============================
+
+    def polarimeter_shift(self, m, waves_in, slit_x, slit_y):
+        #print self.pol_interp[m](3.456)
+        return slit_x, slit_y
 
     def interp(self, m, waves, slit_x, slit_y):
         # fn = os.path.join(codevparsednpy_path % (self.band, self.echang, m))
@@ -385,16 +410,6 @@ class Simulator(object):
         else:
             log.exception("Please specify a real input filename.", exc_info=True)
             sys.exit(0)
-
-    def import_polarimeter(self):
-        """read the files that define the wavelength dependance of the polarimeter"""
-        fname = pol_fn % self.band
-        log.info("Reading polarimeter info from %s"%fname)
-        order,left,middle,right = np.loadtxt(fname,unpack=True)
-        self.pol_inter = {}
-        x = [1,2,3] # temporary - set to left right and middle wavelength
-        for o,l,m,r in zip(order,left,middle,right):
-            self.pol_inter[o] = scipy.interpolate.interp1d(y,[l,m,r],kind='quadratic')
 
 
     def phx_model(self, plot=False):
