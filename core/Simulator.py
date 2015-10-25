@@ -118,10 +118,8 @@ class Simulator(object):
 
             # polarimeter
             if self.polarimeter:
+                log.info("Adding polarimter shift to ray coordinates")
                 slit_x, slit_y = self.polarimeter_shift(m, waves_in, slit_x, slit_y)
-                print dir(self)
-                print self.wmin,self.wmax,self.wl_range_min,self.wl_range_max
-
 
             # normalize to unity
             slit_x /= self.slit_height
@@ -230,7 +228,8 @@ class Simulator(object):
     # =========================[ model methods ]===============================
 
     def polarimeter_shift(self, m, waves_in, slit_x, slit_y):
-        #print self.pol_interp[m](3.456)
+        print m, min(waves_in), self.pol_interp[m].x
+        print self.pol_interp[m](waves_in)
         return slit_x, slit_y
 
     def interp(self, m, waves, slit_x, slit_y):
