@@ -122,6 +122,7 @@ class Simulator(object):
                 print dir(self)
                 print self.wmin,self.wmax,self.wl_range_min,self.wl_range_max
 
+
             # normalize to unity
             slit_x /= self.slit_height
             slit_y /= self.slit_height
@@ -215,13 +216,16 @@ class Simulator(object):
 
     def import_polarimeter(self):
         """read the files that define the wavelength dependance of the polarimeter"""
-        fname = pol_path % self.band
-        log.info("Reading polarimeter info from %s"%fname)
-        order,left,middle,right = np.loadtxt(fname,unpack=True)
+        sep_fname = polsep_path % self.band
+        wave_fname = polwave_path % self.band
+        log.info("Reading polarimeter info from %s and %s"%(sep_fname, wave_fname))
+        sorder,sleft,smiddle,sright = np.loadtxt(sep_fname, unpack=True)
+        worder,wleft,wmiddle,wright = np.loadtxt(wave_fname, unpack=True, delimiter=',')
         self.pol_interp = {}
-        x = [0,1,10] # temporary - set to left right and middle wavelength
-        for o,l,m,r in zip(order,left,middle,right):
-            self.pol_interp[int(o)] = scipy.interpolate.interp1d(x,[l,m,r],kind='linear')
+        for so,sl,sm,sr,wo,wl,wm,wr in zip(sorder,sleft,smiddle,sright,worder,wleft,wmiddle,wright):
+            assert int(so) == int(wo)
+            self.pol_interp[int(so)] = scipy.interpolate.interp1d(\
+                [wl,wm,wr],[sl,sm,sr],kind='linear')
 
     # =========================[ model methods ]===============================
 
