@@ -3,7 +3,7 @@
 Simulator class.
 """
 import numpy as np
-from scipy.interpolate import InterpolatedUnivariateSpline, interp1d
+from scipy.interpolate import InterpolatedUnivariateSpline
 import scipy.integrate
 import scipy.ndimage.filters
 from astropy.io import fits
@@ -220,15 +220,15 @@ class Simulator(object):
         sorder,sleft,smiddle,sright = np.loadtxt(sep_fname, unpack=True)
         worder,wleft,wmiddle,wright = np.loadtxt(wave_fname, unpack=True, delimiter=',')
         self.pol_interp = {}
-        for so,sl,sm,sr,wo,wl,wm,wr in zip(sorder,sleft,smiddle,sright,worder,wleft,wmiddle,wright):
+        for so,sl,sm,sr,wo,wl,wm,wr in zip(\
+                sorder,sleft,smiddle,sright,worder,wleft,wmiddle,wright):
             assert int(so) == int(wo)
-            self.pol_interp[int(so)] = scipy.interpolate.interp1d(\
-                [wl,wm,wr],[sl,sm,sr],kind='linear')
+            self.pol_interp[int(so)] = InterpolatedUnivariateSpline(\
+                [wl,wm,wr],[sl,sm,sr],k=1)
 
     # =========================[ model methods ]===============================
 
     def polarimeter_shift(self, m, waves_in, slit_x, slit_y):
-        print m, min(waves_in), self.pol_interp[m].x
         print self.pol_interp[m](waves_in)
         return slit_x, slit_y
 
@@ -477,5 +477,5 @@ class Simulator(object):
                                [1, 2, 5, 2, 1],
                                [0, 2, 2, 2, 0],
                                [0, 0, 1, 0, 0]], dtype='int16')
-
+        log.info("Convolving map of rays with a 2D kernel, boosting signal by a factor of %s."%np.sum(kernel) )
         self.outarr = scipy.ndimage.filters.convolve(self.outarr, kernel)
