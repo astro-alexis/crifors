@@ -45,17 +45,17 @@ def add_noise(sim):
     det_right = sim.outarr[:, 2*sim.nxpix:3*sim.nxpix]
     shape = det_left.shape
 
-    det_left += det_bias(sim.dl_bias, det="left")
-    det_mid += det_bias(sim.dm_bias, det="middle")
-    det_right += det_bias(sim.dr_bias, det="right")
+    det_left = det_left + det_bias(sim.dl_bias, det="left")
+    det_mid = det_mid + det_bias(sim.dm_bias, det="middle")
+    det_right = det_right + det_bias(sim.dr_bias, det="right")
 
-    det_left += readout_noise(sim.dl_ron, shape, det="left")
-    det_mid += readout_noise(sim.dm_ron, shape, det="middle")
-    det_right += readout_noise(sim.dr_ron, shape, det="right")
+    det_left = det_left + readout_noise(sim.dl_ron, shape, det="left")
+    det_mid = det_mid + readout_noise(sim.dm_ron, shape, det="middle")
+    det_right = det_right + readout_noise(sim.dr_ron, shape, det="right")
 
-    det_left += dark_current(sim.dl_dc, sim.tobs, shape, det="left")
-    det_mid += dark_current(sim.dm_dc, sim.tobs, shape, det="middle")
-    det_right += dark_current(sim.dr_dc, sim.tobs, shape, det="right")
+    det_left = det_left + dark_current(sim.dl_dc, sim.tobs, shape, det="left")
+    det_mid = det_mid + dark_current(sim.dm_dc, sim.tobs, shape, det="middle")
+    det_right = det_right + dark_current(sim.dr_dc, sim.tobs, shape, det="right")
 
     sim.outarr = gain(sim.outarr, sim.inv_gain)
 
