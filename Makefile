@@ -16,7 +16,7 @@ ifeq "$(GCCVERSIONGTEQ4)" "1"
 endif
 
 # link libraries
-LIBS = -lgsl -lgslcblas
+LIBS = -lgsl -lgslcblas -lm `pkg-config --cflags --libs gsl`
 
 # telluric spectra
 TELLDIR = data/spectra/telluric
@@ -55,15 +55,15 @@ all: $(OBJS)
 	@echo "Done."
 
 $(OBJ1): $(SRC1)
-	$(CC) -shared -o $(OBJ1) $(CFLAGS) $(LIBS) $(SRC1)
+	$(CC) -shared -o $(OBJ1) $(CFLAGS) $(SRC1) $(LIBS)
 	@echo  "Compilation of '$(SRC1)' to '$(OBJ1)' successful."
 
 $(OBJ2): $(SRC2)
-	$(CC) -shared -o $(OBJ2) $(CFLAGS) $(LIBS) $(SRC2)
+	$(CC) -shared -o $(OBJ2) $(CFLAGS) $(SRC2) $(LIBS)
 	@echo  "Compilation of '$(SRC2)' to '$(OBJ2)' successful."
 
 $(OBJ3): $(SRC3)
-	$(CC) -shared -o $(OBJ3) $(CFLAGS) $(LIBS) $(SRC3)
+	$(CC) -shared -o $(OBJ3) $(CFLAGS) $(SRC3) $(LIBS)
 	@echo  "Compilation of '$(SRC3)' to '$(OBJ3)' successful."
 
 $(TELLOBJS): $(TELLSRC)
