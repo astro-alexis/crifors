@@ -217,7 +217,13 @@ class Simulator(object):
         sep_fname = polsep_path % self.band
         wave_fname = polwave_path % self.band
         log.info("Reading polarimeter info from %s and %s"%(sep_fname, wave_fname))
-        sorder,sleft,smiddle,sright = np.loadtxt(sep_fname, unpack=True)
+
+        # divide by conversion factors to separation data
+        # /1.843 for nasmith focus to detector scale
+        # /18 pixel size in micron
+        # /2 to get the offset from center instead of separation
+        converters = {i:lambda mu: float(mu)/66.348 for i in range(1,4)}
+        sorder,sleft,smiddle,sright = np.loadtxt(sep_fname, unpack=True, converters=converters)
         worder,wleft,wmiddle,wright = np.loadtxt(wave_fname, unpack=True, delimiter=',')
         self.pol_interp = {}
         for so,sl,sm,sr,wo,wl,wm,wr in zip(\
@@ -229,8 +235,9 @@ class Simulator(object):
     # =========================[ model methods ]===============================
 
     def polarimeter_shift(self, m, waves_in, slit_x, slit_y):
-        print self.pol_interp[m](waves_in)
-        return slit_x, slit_y
+        sign = np.random.choice([-1,1],size=len(waves_in)) # shift half of the rays up, half downward.
+        offset = self.pol_interp[m](waves_in)
+        return slit_x, slit_y + (offset*sign)
 
     def interp(self, m, waves, slit_x, slit_y):
         # fn = os.path.join(codevparsednpy_path % (self.band, self.echang, m))
