@@ -229,7 +229,7 @@ class Instrument(object):
     def find_ccd_limits_falloff(self, write=False):
 
         import matplotlib.pyplot as plt
-        blaze_flag = 1
+        blaze_flag = int(self.blaze)
         return_mode = 1   # return in mm
 
         ndims = (21, self.orders.size)
@@ -254,9 +254,9 @@ class Instrument(object):
             alpha_ech = self.alpha_ech
             blaze_ech = self.blaze_ech
             gamma_ech = self.gamma_ech
-            sigma_ech = 1e6 / self.sigma_ech_inv						# Was 1e7, why?
+            sigma_ech = 1e6 / self.sigma_ech_inv						
             alpha_cd = self.alpha_cd
-            sigma_cd = 1e6 / self.sigma_cd_inv							# Was 1e7, why?
+            sigma_cd = 1e6 / self.sigma_cd_inv							
             f_cam = self.f_cam
             f_cam_1 = self.f_cam_1
             xdl_0 = self.xdl_0
