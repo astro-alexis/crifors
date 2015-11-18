@@ -225,11 +225,25 @@ class Simulator(object):
         converters = {i:lambda mu: float(mu)/66.348 for i in range(1,4)}
         sorder,sleft,smiddle,sright = np.loadtxt(sep_fname, unpack=True, converters=converters)
         worder,wleft,wmiddle,wright = np.loadtxt(wave_fname, unpack=True, delimiter=',')
+        sorder = map(int,sorder)
+        worder = map(int,worder)
+
+        slit_heights = {}
+        for m in sorder:
+            fn = os.path.splitext(codevparsed_path % (self.band, self.echang, m))[0] + ".npy"
+            wl, slitheight = np.load(fn).T[[1,8],::-1]
+            slit_heights[m] = InterpolatedUnivariateSpline(wl, slitheight,k=1)
+
         self.pol_interp = {}
         for so,sl,sm,sr,wo,wl,wm,wr in zip(\
                 sorder,sleft,smiddle,sright,worder,wleft,wmiddle,wright):
-            assert int(so) == int(wo)
-            self.pol_interp[int(so)] = InterpolatedUnivariateSpline(\
+            assert so == wo
+
+            sl = sl /slit_heights[so](wl) /self.slit_height
+            sm = sm /slit_heights[so](wm) /self.slit_height
+            sr = sl /slit_heights[so](wr) /self.slit_height
+
+            self.pol_interp[so] = InterpolatedUnivariateSpline(\
                 [wl,wm,wr],[sl,sm,sr],k=1)
 
     # =========================[ model methods ]===============================
