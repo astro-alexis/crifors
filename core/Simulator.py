@@ -220,9 +220,9 @@ class Simulator(object):
 
         # divide by conversion factors to separation data
         # /1.843 for nasmith focus to detector scale
-        # /18 pixel size in micron
         # /2 to get the offset from center instead of separation
-        converters = {i:lambda mu: float(mu)/66.348 for i in range(1,4)}
+        # /1000 micron to mm
+        converters = {i:lambda mu: float(mu)/3686.0 for i in range(1,4)}
         sorder,sleft,smiddle,sright = np.loadtxt(sep_fname, unpack=True, converters=converters)
         worder,wleft,wmiddle,wright = np.loadtxt(wave_fname, unpack=True, delimiter=',')
         sorder = map(int,sorder)
@@ -231,7 +231,7 @@ class Simulator(object):
         slit_heights = {}
         for m in sorder:
             fn = os.path.splitext(codevparsed_path % (self.band, self.echang, m))[0] + ".npy"
-            wl, slitheight = np.load(fn).T[[1,8],::-1]
+            wl, slitheight = np.load(fn).T[[1,8],::-1] # reverse b/c interpolation wants sorted x
             slit_heights[m] = InterpolatedUnivariateSpline(wl, slitheight,k=1)
 
         self.pol_interp = {}
@@ -239,9 +239,9 @@ class Simulator(object):
                 sorder,sleft,smiddle,sright,worder,wleft,wmiddle,wright):
             assert so == wo
 
-            sl = sl /slit_heights[so](wl) /self.slit_height
-            sm = sm /slit_heights[so](wm) /self.slit_height
-            sr = sl /slit_heights[so](wr) /self.slit_height
+            sl = sl /slit_heights[so](wl) *self.slit_height
+            sm = sm /slit_heights[so](wm) *self.slit_height
+            sr = sr /slit_heights[so](wr) *self.slit_height
 
             self.pol_interp[so] = InterpolatedUnivariateSpline(\
                 [wl,wm,wr],[sl,sm,sr],k=1)
