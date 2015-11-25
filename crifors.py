@@ -210,6 +210,8 @@ def main():
         ax2 = plt.subplot(gs[1])
         ax1.imshow(simulator.outarr, origin="lower", interpolation='nearest', cmap="hot")
         ax2.plot(simulator.source_spectrum[0], simulator.source_spectrum[1])
+        for mwaves,mpdf in simulator.mwaves_mpdfs:
+            ax2.plot(mwaves,mpdf)
         ax2.set_xlabel("Wavelength (nm)")
         ax2.set_ylabel("PDF")
         plt.tight_layout()

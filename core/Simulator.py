@@ -105,9 +105,7 @@ class Simulator(object):
         t0 = time.time()
         d0 = time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime())
 
-        x_slit = []
-        y_slit = []
-        wave_slit = []
+        self.mwaves_mpdfs = []
 
         # START SIMULATION
         log.info("Beginning simulation, %s", d0)
@@ -120,6 +118,9 @@ class Simulator(object):
                 blaze_eff, lambda_blaze = blazefunc.blaze_func(mwaves, m, self.alpha_ech, self.sigma_ech_inv, self.gamma_ech, self.blaze_ech)
                 # New probability distribution with blaze efficiency embedded
                 mpdf = np.multiply(mpdf, blaze_eff)
+
+            # save mwaves and mwaves_mpdfs
+            self.mwaves_mpdfs.append((mwaves,mpdf))
 
             if mwaves.size == 0 or mpdf.size == 0:
                 log.warning("Order %s failed. Source spectrum does not have wavelengths in this range.", m)
