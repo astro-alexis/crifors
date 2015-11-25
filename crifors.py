@@ -10,7 +10,7 @@ Usage:
                [--model=MODEL] [--nrays=NRAYS] [--nruns=NRUNS] [--outfn=OUTFN]
                [--plot | --plot-psf | plot-simple] [--psf=PSF] [--rv=RV]
                [--seeing=SEEING] [--slit-width=SLIT] [--verbose=LEVEL]
-               [--spread] [--plot-slit]
+               [--spread] [--polarimeter]
     crifors.py [-h] | [--help] | [--version]
 
 Arguments:
@@ -29,7 +29,7 @@ Simulation options:
     --bglight=BGLIGHT  background light file
     --dlamb=DLAMB      wavelength grid resolution in nm [Default: 1e-5]
     --echang=ECHANG    incident echelle angle [Default: 63.5]
-    --factor=FACTOR    multiplying factor to convert wavelengths to nm
+    --factor=FACTOR    factor to multiply wavelengths to convert to nm
     --nrays=NRAYS      number of rays [Default: 1e7]
     --nruns=NRUNS      number of simulation runs [Default: 1]
     --psf=PSF          psf [Default: gaussian]
@@ -37,6 +37,7 @@ Simulation options:
     --seeing=SEEING    seeing in arcseconds [Default: 1.5]
     --slit-width=SLIT  width of slit in arcseconds [Default: 0.2]
     --spread           spread out each ray by convolving with a kernel
+    --polarimeter      duplicate each ray with beam splitter separation
 
 Other options:
     --config=CONFIG    simulation config file
@@ -45,7 +46,6 @@ Other options:
     --plot             open raytrace plot after simulation and exit
     --plot-psf         preview slit psf function before simulation and exit
     --plot-simple      open simple raytrace plot and exit
-    --plot-slit        open slit psf function
     --ds9              open simulated image in SAO-DS9
 
 Argument details:
@@ -85,7 +85,7 @@ Option details:
 -m, --model=MODEL
     The raytracing model to use.  This can be of the choices (interp, solve).
     Interp is interpolation using Code V output.  Solve is solving the physical
-    model.  As of now, 'solve' is not currently implemented.
+    model.
 --bglight=BGLIGHT
     This is the background light file. Not currently supported.
 --config=CONFIG
@@ -126,6 +126,8 @@ Option details:
 --slit-width=SLIT
     Width of slit in arcseconds (0.2, 0.4)
 --spread
+    tbw
+--polarimeter
     tbw
 
 Examples:
@@ -190,7 +192,13 @@ def main():
         simulator.spreadout()
 
     # ADD NOISE
-    simulator.add_noise()
+    if args["--noise"]:
+        core.add_noise(simulator)
+
+    t1 = time.time()
+    d1 = time.strftime("%Y-%m-%d_%H.%M.%S", time.gmtime())
+    log.info("End time: %s", d1)
+    log.info("Run time: %.1f s", t1-t0)
 
     if args["--plot"]:
         log.info("Opening plot...")
@@ -201,20 +209,14 @@ def main():
         ax1 = plt.subplot(gs[0])
         ax2 = plt.subplot(gs[1])
         ax1.imshow(simulator.outarr, origin="lower", interpolation='nearest', cmap="hot")
-        ax1.set_title("CRIRES+ %s-band, echang=%s" % (simulator.band, simulator.echang))
         ax2.plot(simulator.source_spectrum[0], simulator.source_spectrum[1])
         ax2.set_xlabel("Wavelength (nm)")
         ax2.set_ylabel("PDF")
-        ax2.set_title("PHOENIX model, Teff=3000K, log(g)=5.0, [M/H]=0.0")
         plt.tight_layout()
         plt.show()
-    t1 = time.time()
-    d1 = time.strftime("%Y-%m-%d_%H.%M.%S", time.gmtime())
-    log.info("End time: %s", d1)
-    log.info("Run time: %.1f s", t1-t0)
-
-    # WRITE TO FITS FILE
-    core.write_to_fits(simulator)
+    else:
+        # WRITE TO FITS FILE
+        core.write_to_fits(simulator)
 
     # SPAWN FITS OUTPUT IMAGE IN SAO-DS9
     if args["--ds9"]:

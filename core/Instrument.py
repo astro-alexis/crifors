@@ -10,7 +10,7 @@ import ConfigParser
 import logging
 import sys
 from defaults import *
-import cinterface as ci
+from parsecodev import get_codev_files
 
 # config file helpers
 _bands = {
@@ -22,15 +22,14 @@ _bands = {
     "M" : "mband"
     }
 _sections = [
-    "crossdisp",
-    "detector",
-    "echelle",
     "instrument",
-    "model",
-    #"noise",
-    "settings",
+    "echelle",
+    "crossdisp",
     "slit",
     "slitpsf",
+    "detector",
+    "settings",
+    "model",
     ]
 _cl = {
     "bglight" : "--bglight",
@@ -44,15 +43,18 @@ _cl = {
     "nrays" : "--nrays",
     "nruns" : "--nruns",
     "outfn" : "--outfn",
-    "plotslit" : "--plot-slit",
     "psf" : "--psf",
+    "plot_psf":"--plot-psf",
     "rv" : "--rv",
     "seeing" : "--seeing",
     "slit_width" : "--slit-width",
     "source" : "SOURCE",
     "telluric" : "--telluric",
     "spread" : "--spread",
+    "polarimeter" : "--polarimeter",
     }
+
+
 log = logging.getLogger(__name__)
 
 
@@ -61,8 +63,7 @@ def merge(dict_1, dict_2):
     Values that evaluate to true take priority over false values.
     `dict_1` takes priority over `dict_2`.
     """
-    return dict(
-        (str(key), dict_1.get(key) or dict_2.get(key))
+    return dict((str(key), dict_1.get(key) or dict_2.get(key))
         for key in set(dict_2) | set(dict_1))
 
 
@@ -128,7 +129,6 @@ class Instrument(object):
                 log.info("   %s.%s = %s", self.__class__.__name__, k, v)
 
 
-        # TODO OVERRIDE WITH COMMAND LINE ARGUMENTS
         # TODO need error handling of attributes
         log.info("Initializing command line arguments.")
         for k,v in sorted(_cl.iteritems()):
@@ -160,6 +160,16 @@ class Instrument(object):
         self.xdr_re = self.xdr_0 + self.nxpix*self.dpix*0.5
         self.xdlm = -(self.nxpix*self.dpix+self.xdl+self.xdm)*0.5
         self.xdmr = (self.nxpix*self.dpix+self.xdm+self.xdr)*0.5
+        # # SANITY CHECK
+        # print self.tau_dl, self.tau_dm, self.tau_dr
+        # print "(%s, %s):%s  (%s, %s):%s  (%s, %s):%s" % (
+        #     self.xdl_le, self.xdl_re, self.xdl_le-self.xdl_re,
+        #     self.xdm_le, self.xdm_re, self.xdm_le-self.xdm_re,
+        #     self.xdr_le, self.xdr_re, self.xdr_le-self.xdr_re)
+        # print "%s | %s" % (self.xdlm, self.xdmr)
+        # print "det = (%s, %s)  (%s, %s) (%s, %s)" % (self.xdl, self.ydl, self.xdm, self.ydm, self.xdr, self.ydr)
+        # print "det0 = (%s, %s)  (%s, %s) (%s, %s)" % (self.xdl_0, self.ydl_0, self.xdm_0, self.ydm_0, self.xdr_0, self.ydr_0)
+        # raw_input("Press Enter to continue...")
 
         # RUN INITIALIZATION METHODS/PROCEDURES
         self.set_spectral_orders()
@@ -185,7 +195,10 @@ class Instrument(object):
 
         elif self.model == "solve":
             self.find_ccd_limits_falloff()
-            #self.find_ccd_limits_interp()
+
+
+    def interp_echang(self):
+        pass
 
 
     def find_ccd_limits_interp(self, write=False):
@@ -195,7 +208,8 @@ class Instrument(object):
 
         # detector x positions in mm
         # NOTE does not take detector tilt into account
-        x_det = np.array([self.xdl_le, self.xdl_re, self.xdm_le,
+        x_det = np.array(
+            [self.xdl_le, self.xdl_re, self.xdm_le,
             self.xdm_re, self.xdr_le, self.xdr_re])
         log.debug("Detector edges = %s mm", x_det)
         for i in xrange(n):
@@ -225,7 +239,6 @@ class Instrument(object):
             pass
         pass
 
-
     def find_ccd_limits_falloff(self, write=False):
 
         import matplotlib.pyplot as plt
@@ -254,9 +267,9 @@ class Instrument(object):
             alpha_ech = self.alpha_ech
             blaze_ech = self.blaze_ech
             gamma_ech = self.gamma_ech
-            sigma_ech = 1e6 / self.sigma_ech_inv						
+            sigma_ech = 1e6 / self.sigma_ech_inv
             alpha_cd = self.alpha_cd
-            sigma_cd = 1e6 / self.sigma_cd_inv							
+            sigma_cd = 1e6 / self.sigma_cd_inv
             f_cam = self.f_cam
             f_cam_1 = self.f_cam_1
             xdl_0 = self.xdl_0

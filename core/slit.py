@@ -79,22 +79,14 @@ def point_source(yoffset=0.0, plot=False):
     return slit
 
 
-def slit_uniform_psf(n, seeing, mu_x, mu_y, tau_0, slit_width, slit_height, plot=False):
-    """Returns x- and y- coordinate arrays of a 2D random uniformly distributed
-    circle.
+def slit_uniform_psf(n, slit_width, slit_height, decker=0, plot=False):
+    """Returns x- and y- coordinate arrays of a "D random uniformly distributed
+    fully filled slit.
 
     Parameters
     ----------
     n : int
         Size of coordinate arrays.
-    seeing: double
-        Seeing of source psf in arcseconds.
-    mu_x : double
-        Center of PSF in x-coords.
-    mu_y : double
-        Center of PSF in y-coords.
-    tau_0 : double
-        Rotation about z-axis (tilt).
     slit_width : double
         Width of slit in arcseconds.
     slit_height : double
@@ -108,36 +100,41 @@ def slit_uniform_psf(n, seeing, mu_x, mu_y, tau_0, slit_width, slit_height, plot
         Array of y-coordinates.
 
     """
-    desc = "Source psf: uniform, mux=%.2f muy=%.2f seeing=%.2f arcsec" % (mu_x, mu_y, seeing)
-    log.info(desc)
     # initialize output arrays to send to c function
     slit_x = np.empty(n, dtype=np.float64)
     slit_y = np.empty(n, dtype=np.float64)
     slit_x = np.require(slit_x, requirements=ci.req_out, dtype=np.float64)
     slit_y = np.require(slit_y, requirements=ci.req_out, dtype=np.float64)
-    func = ci.slitc.slit_uniform_psf
+
+    if decker==1:
+        func = ci.slitc.slit_decker1_psf
+        log.info('Decker 1 chosen')
+    elif decker==2:
+        func = ci.slitc.slit_decker2_psf
+        log.info('Decker 2 chosen')
+    else:
+        func = ci.slitc.slit_uniform_psf
+        log.info('No decker chosen')
+
     func.argtypes = [
         ct.c_int,             # n
-        ct.c_double,          # seeing
-        ct.c_double,          # mu_x
-        ct.c_double,          # mu_y
-        ct.c_double,          # tau_0
         ct.c_double,          # slit_width
         ct.c_double,          # slit_height
         ci.array_1d_double,   # slit_x
         ci.array_1d_double]   # slit_y
     func.restype = None
     log.info("Slit Rejection Sampling: %s rays...", n)
-    func(n, seeing, mu_x, mu_y, tau_0, slit_width, slit_height, slit_x, slit_y)
+    func(n, slit_width, slit_height, slit_x, slit_y)
     # preview slit
     if plot:
         log.info("Opening preview plot of 2D uniformly random psf.")
         import matplotlib.pylab as plt
         fig = plt.figure()
-        ax = fig.add_subplot(111)#, aspect='equal')
-        ax.scatter(slit_x, slit_y, s=20, edgecolor=None)
+        ax = fig.add_subplot(111)
+        ax.hexbin(slit_x, slit_y)
         plt.title("0D Point Source PSF")
         plt.show()
+        sys.exit()
     return slit_x, slit_y
 
 
@@ -199,10 +196,39 @@ def slit_gaussian_psf(n, mu_x, mu_y, sig_x, sig_y, tau_0, slit_width, slit_heigh
         import matplotlib.pylab as plt
         fig = plt.figure()
         ax = fig.add_subplot(111)#, aspect='equal')
-        ax.scatter(slit_x, slit_y, s=20, edgecolor=None)
+        #ax.scatter(slit_x, slit_y, s=20, lw=0, alpha=0.5)
+        ax.hexbin(slit_x,slit_y)
         plt.title("2D Gaussian PSF")
         plt.show()
+        sys.exit()
     return slit_x, slit_y
+
+def slit_polarimeter_psf(n, mu_x, mu_y, sig_x, sig_y, tau_0, slit_width, slit_height, plot=False):
+    """uses the Gaussian PSF and adds two of them"""
+
+    slit_x1, slit_y1 = slit_gaussian_psf(\
+                n //2 + n%2,
+                mu_x,
+                mu_y - (slit_height/4),
+                sig_x,
+                sig_y,
+                tau_0,
+                slit_width,
+                slit_height,
+                plot=plot,
+                )
+    slit_x2, slit_y2 = slit_gaussian_psf(\
+                n //2,
+                mu_x,
+                mu_y + (slit_height/4),
+                sig_x,
+                sig_y,
+                tau_0,
+                slit_width,
+                slit_height,
+                plot=plot,
+                )
+    return np.concatenate((slit_x1,slit_x2)), np.concatenate((slit_y1,slit_y2)),
 
 
 # ==============================[ TESTS ]======================================

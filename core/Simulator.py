@@ -18,6 +18,7 @@ from noise import add_noise
 import physics
 import slit
 import wavefuncs as wf
+from parsecodev import get_codev_files
 
 log = logging.getLogger(__name__)
 
@@ -70,6 +71,10 @@ class Simulator(object):
         self.med_rays_per_pixel = 0
         self.min_rays_per_pixel = 0
         self.max_rays_per_pixel = 0
+
+        # READ POLARIMETER PARAMETERS IF NECESSARY
+        if self.polarimeter:
+                self.import_polarimeter()
 
 
     def run(self):
@@ -131,6 +136,12 @@ class Simulator(object):
 
             # pre sample slit
             slit_x, slit_y = self.slitfunc(mnrays)
+
+            # polarimeter
+            if self.polarimeter:
+                log.info("Adding polarimter shift to ray coordinates")
+                slit_x, slit_y = self.polarimeter_shift(m, waves_in, slit_x, slit_y)
+
             # normalize to unity
             slit_x /= self.slit_height
             slit_y /= self.slit_height
@@ -138,68 +149,6 @@ class Simulator(object):
             # input through model
             assert slit_x.size == slit_y.size == waves_in.size
             self.modelfunc(m, waves_in, slit_x, slit_y)
-            if self.plotslit:
-                x_slit.append(slit_x)
-                y_slit.append(slit_y)
-                wave_slit.append(waves_in)
-        if self.plotslit:
-            x_slit = np.concatenate(x_slit)
-            y_slit = np.concatenate(y_slit)
-            wave_slit = np.concatenate(wave_slit)
-            import matplotlib.pyplot as plt
-            cm = plt.cm.get_cmap('autumn_r')
-            slit_mask_inds = np.random.random_integers(0, high=x_slit.size-1, size=1e5)
-            x_slit = x_slit[slit_mask_inds]
-            y_slit = y_slit[slit_mask_inds]
-            wave_slit = wave_slit[slit_mask_inds]
-
-            from scipy.stats import norm
-            from matplotlib.ticker import NullFormatter
-            nullfmt = NullFormatter()
-            left, width = 0.1, 0.65
-            bottom, height = 0.1, 0.65
-            bottom_h = left_h = left+width+0.02
-
-            rect_scatter = [left, bottom, width, height]
-            rect_histx = [left, bottom_h, width, 0.2]
-            rect_histy = [left_h, bottom, 0.2, height]
-
-            # start with a rectangular Figure
-            plt.figure(1, figsize=(8,8))
-
-            axScatter = plt.axes(rect_scatter)
-            axHistx = plt.axes(rect_histx)
-            axHisty = plt.axes(rect_histy)
-
-            # no labels
-            axHistx.xaxis.set_major_formatter(nullfmt)
-            axHisty.yaxis.set_major_formatter(nullfmt)
-
-            # the scatter plot:
-            cb = axScatter.scatter(x_slit, y_slit, c=wave_slit, cmap=cm, s=5, edgecolors='none')
-            # now determine nice limits by hand:
-            binwidth = 0.005
-            xymax = np.max( [np.max(np.fabs(x_slit)), np.max(np.fabs(y_slit))] )
-            lim = ( int(xymax/binwidth) + 1) * binwidth
-
-            axScatter.set_xlim( (-lim, lim) )
-            axScatter.set_ylim( (-lim, lim) )
-
-            bins = np.arange(-lim, lim + binwidth, binwidth)
-            whatisthis = axHistx.hist(x_slit, bins=bins, normed=True)
-            axHisty.hist(y_slit, bins=bins, orientation='horizontal', normed=True)
-
-            axHistx.set_xlim( axScatter.get_xlim() )
-            axHisty.set_ylim( axScatter.get_ylim() )
-
-            mux, sigx = norm.fit(slit_x)
-            histx_x = np.linspace(x_slit.min()-0.5, x_slit.max()+0.5)
-            histy_x = np.linspace(y_slit.min()+0.1, y_slit.max()+0.1)
-            #axHistx.plot(histx_x, norm.pdf(histx_x, self.mu_x_psf, self.sig_x_psf))
-            #axHisty.plot(histy_x, norm.pdf(histy_x, self.mu_y_psf,  self.sig_y_psf))
-            plt.colorbar(cb, label='wavelengths [nm]')
-            plt.show()
-
         self.sim_time = time.time() - t0
         inds = np.where(self.outarr != 0)
         self.mean_rays_per_pixel = np.mean(self.outarr[inds])
@@ -232,7 +181,52 @@ class Simulator(object):
     def init_slitfunc(self):
         log.info("Initializing source PSF: %s", self.psf)
         if self.psf == "gaussian":
-            return self.psf_gaussian
+            return lambda nrays: slit.slit_gaussian_psf(\
+                int(nrays),
+                self.mu_x_psf,
+                self.mu_y_psf,
+                self.sig_x_psf,
+                self.sig_y_psf,
+                self.tau_s0,
+                self.slit_width,
+                self.slit_height,
+                plot=self.plot_psf,
+                )
+        elif self.psf == "polarimeter":
+            return lambda nrays: slit.slit_polarimeter_psf(\
+                int(nrays),
+                self.mu_x_psf,
+                self.mu_y_psf,
+                self.sig_x_psf,
+                self.sig_y_psf,
+                self.tau_s0,
+                self.slit_width,
+                self.slit_height,
+                plot=self.plot_psf,
+                )
+        elif self.psf == "uniform":
+            return lambda nrays: slit.slit_uniform_psf(\
+                int(nrays),
+                self.slit_width,
+                self.slit_height,
+                plot=self.plot_psf,
+                )
+        elif self.psf == "decker1":
+            return lambda nrays: slit.slit_uniform_psf(\
+                int(nrays),
+                self.slit_width,
+                self.slit_height,
+                decker=1,
+                plot=self.plot_psf,
+                )
+        elif self.psf == "decker2":
+            return lambda nrays: slit.slit_uniform_psf(\
+                int(nrays),
+                self.slit_width,
+                self.slit_height,
+                decker=2,
+                plot=self.plot_psf,
+                )
 
     def init_raytrace(self):
         log.info("Initializing raytracing model: %s", self.model)
@@ -241,12 +235,51 @@ class Simulator(object):
         elif self.model == "solve":
             return self.solve
 
+    def import_polarimeter(self):
+        """read the files that define the wavelength dependance of the polarimeter"""
+        sep_fname = polsep_path % self.band
+        wave_fname = polwave_path % self.band
+        log.info("Reading polarimeter info from %s and %s"%(sep_fname, wave_fname))
+
+        # divide by conversion factors to separation data
+        # /1.843 for nasmith focus to detector scale
+        # /2 to get the offset from center instead of separation
+        # /1000 micron to mm
+        converters = {i:lambda mu: float(mu)/3686.0 for i in range(1,4)}
+        sorder,sleft,smiddle,sright = np.loadtxt(sep_fname, unpack=True, converters=converters)
+        worder,wleft,wmiddle,wright = np.loadtxt(wave_fname, unpack=True, delimiter=',')
+        sorder = map(int,sorder)
+        worder = map(int,worder)
+
+        slit_heights = {}
+        for m in sorder:
+            fn = os.path.splitext(codevparsed_path % (self.band, self.echang, m))[0] + ".npy"
+            wl, slitheight = np.load(fn).T[[1,8],::-1] # reverse b/c interpolation wants sorted x
+            slit_heights[m] = InterpolatedUnivariateSpline(wl, slitheight,k=1)
+
+        self.pol_interp = {}
+        for so,sl,sm,sr,wo,wl,wm,wr in zip(\
+                sorder,sleft,smiddle,sright,worder,wleft,wmiddle,wright):
+            assert so == wo
+
+            sl = sl /slit_heights[so](wl) *self.slit_height
+            sm = sm /slit_heights[so](wm) *self.slit_height
+            sr = sr /slit_heights[so](wr) *self.slit_height
+
+            self.pol_interp[so] = InterpolatedUnivariateSpline(\
+                [wl,wm,wr],[sl,sm,sr],k=1)
+
     # =========================[ model methods ]===============================
 
+    def polarimeter_shift(self, m, waves_in, slit_x, slit_y):
+        sign = np.random.choice([-1,1],size=len(waves_in)) # shift half of the rays up, half downward.
+        offset = self.pol_interp[m](waves_in)
+        return slit_x, slit_y + (offset*sign)
+
     def interp(self, m, waves, slit_x, slit_y):
-        fn = os.path.join(codevparsednpy_path % (self.band, self.echang, m))
-        log.info("Loading '%s'", fn)
-        _m, wl, xb, xmid, xt, yb, ymid, yt, slitheight, phi = np.load(fn).T
+        # fn = os.path.join(codevparsednpy_path % (self.band, self.echang, m))
+        # log.info("Loading '%s'", fn)
+        _m, wl, xb, xmid, xt, yb, ymid, yt, slitheight, phi = get_codev_files(self, m)
         inds = np.argsort(wl)
         wl = wl[inds]
         xbot = xb[inds]
@@ -301,9 +334,37 @@ class Simulator(object):
         tau_dl = self.tau_dl
         tau_dm = self.tau_dm
         tau_dr = self.tau_dr
+        func = ci.raytrace.raytrace_interp_bin
+        func.argtypes = [
+            ct.c_int,               # nxpix
+            ct.c_int,               # nypix
+            ct.c_double,            # dpix
+            ct.c_double,            # xdl_0
+            ct.c_double,            # xlm_0
+            ct.c_double,            # xdr_0
+            ct.c_double,            # ydl_0
+            ct.c_double,            # ydm_0
+            ct.c_double,            # ydr_0
+            ct.c_double,            # tau_dl
+            ct.c_double,            # tau_dm
+            ct.c_double,            # tau_dr
+            ct.c_double,            # slit_ratio
+            ct.c_ulong,             # nslit
+            ct.c_uint,              # cn
+            ci.array_1d_double,     # cwl
+            ci.array_1d_double,     # cxb
+            ci.array_1d_double,     # cxm
+            ci.array_1d_double,     # cxt
+            ci.array_1d_double,     # cyb
+            ci.array_1d_double,     # cym
+            ci.array_1d_double,     # cyt
+            ci.array_1d_double,     # cphi
+            ci.array_1d_double,     # waves
+            ci.array_1d_double,     # slit_x
+            ci.array_1d_double,     # slit_y
+            ci.array_2d_uint]       # outarr
+        func.restype = None
         log.info("Raytracing order %s...", m)
-        func = ci.interp
-
         func(nxpix, nypix, dpix, xdl_0, xdm_0, xdr_0,
             ydl_0, ydm_0, ydr_0, tau_dl, tau_dm, tau_dr, slit_ratio, n, cn, wl,
             xbot, xmid, xtop, ybot, ymid, ytop, phi, waves, slit_x, slit_y,
@@ -349,30 +410,8 @@ class Simulator(object):
             returnwaves, self.outarr)
 
 
-    # =========================[ slit methods ]================================
 
-
-    def psf_gaussian(self, nrays):
-        n = int(nrays)
-        mux = self.mu_x_psf
-        muy = self.mu_y_psf
-        sigx = self.sig_x_psf
-        sigy = self.sig_y_psf
-        tau = self.tau_s0
-        sw = self.slit_width
-        sh = self.slit_height
-        return slit.slit_gaussian_psf(n, mux, muy, sigx, sigy, tau, sw, sh)
-
-
-    def psf_uniform(self, nrays):
-        pass
-
-
-    def psf_point(self, offset=None):
-        pass
-
-
-    # ======================[ spectrum mtehods ]===============================
+    # ======================[ spectrum methods ]===============================
 
 
     def initialize_spectrum(self):
@@ -522,5 +561,5 @@ class Simulator(object):
                                [1, 2, 5, 2, 1],
                                [0, 2, 2, 2, 0],
                                [0, 0, 1, 0, 0]], dtype='int16')
-
+        log.info("Convolving map of rays with a 2D kernel, boosting signal by a factor of %s."%np.sum(kernel) )
         self.outarr = scipy.ndimage.filters.convolve(self.outarr, kernel)
