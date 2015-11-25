@@ -7,6 +7,7 @@ from scipy.interpolate import InterpolatedUnivariateSpline
 import scipy.integrate
 import scipy.ndimage.filters
 from astropy.io import fits
+import matplotlib.pyplot as plt
 import ctypes as ct
 import logging
 import os
@@ -19,6 +20,7 @@ import physics
 import slit
 import wavefuncs as wf
 from parsecodev import get_codev_files
+import blazefunc
 
 log = logging.getLogger(__name__)
 
@@ -106,26 +108,23 @@ class Simulator(object):
         x_slit = []
         y_slit = []
         wave_slit = []
-        
-        # Defining the blaze flag and importing function
-        blaze_flag = int(self.blaze)
-        if blaze_flag==1:
-            import blazefunc   
-        
+
         # START SIMULATION
         log.info("Beginning simulation, %s", d0)
         for m in self.orders:
             # pre sample wavelengths
             mwaves, mpdf = wf.feed_spectrum(self, m, waves, pdf)
+
             # Blaze function
-            if blaze_flag == 1:
-                blaze_eff, lambda_blaze = blazefunc.blaze_func(mwaves, m, self.alpha_ech, self.sigma_ech_inv, self.gamma_ech, self.blaze_ech)	
+            if self.blaze:
+                blaze_eff, lambda_blaze = blazefunc.blaze_func(mwaves, m, self.alpha_ech, self.sigma_ech_inv, self.gamma_ech, self.blaze_ech)
                 # New probability distribution with blaze efficiency embedded
-                mpdf = np.multiply(mpdf, blaze_eff)			
-                			
+                mpdf = np.multiply(mpdf, blaze_eff)
+
             if mwaves.size == 0 or mpdf.size == 0:
                 log.warning("Order %s failed. Source spectrum does not have wavelengths in this range.", m)
                 continue
+
             pdf_ratio = scipy.integrate.simps(mpdf, mwaves) / pdf_tot
             mnrays = int(pdf_ratio * self.nrays)
             # just in case we are given 0 rays to simulate
@@ -511,7 +510,6 @@ class Simulator(object):
         wavelengths = fits.open(phx_waves_path)[0].data * 0.1 # Ang to nm
         flux = fits.open(phx_flux_path)[0].data
         if plot:
-            import matplotlib.pyplot as plt
             plt.plot(wavelengths, flux)
             plt.show()
         return wavelengths, flux
@@ -532,7 +530,6 @@ class Simulator(object):
         wavelengths = np.linspace(wmin, wmax, num=n)
         flux = np.ones(wavelengths.size)
         if plot:
-            import matplotlib.pyplot as plt
             plt.plot(wavelengths, flux)
             plt.show()
         return wavelengths, flux
