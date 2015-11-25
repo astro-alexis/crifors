@@ -11,6 +11,7 @@ import logging
 import sys
 from defaults import *
 from parsecodev import get_codev_files
+import cinterface as ci
 
 # config file helpers
 _bands = {
