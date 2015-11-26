@@ -26,11 +26,12 @@ def blaze_func(wavelength, m, Echelle_angle, sigma_echelle, gamma_echelle, blaze
 
 	# Approximated values more closely resembling Tino's excel-arc
 	#pi = 3.14159267
-	#alpha_ech=Echelle_angle * pi/180
 	#sigma_ech = 31600
-	#D_alpha_ech = -3.23 * pi/180
+	#alpha_ech=Echelle_angle * pi/180
+	#gamma_ech = 3.8 * pi/180
 	#blaze_angle = 63.5 * pi/180
 	#theta_blaze=alpha_ech-blaze_angle
+	#D_alpha_ech = -3.23 * pi/180
 
 	beta=np.arcsin(wavelength * m / sigma_ech - np.sin(alpha_ech)) - D_alpha_ech - alpha_ech
 	lambda_blaze = 2 * sigma_ech * np.cos(gamma_ech) * np.sin(blaze_angle) / m
