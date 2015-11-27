@@ -4,27 +4,28 @@
 # Description:
 # ------------
 """ File to describe the Blaze function and make it implementable
-	into crifors. Input should be in wavelengths [nm], order m, alpha angle of 
-	echelle [deg], gamma angle of echelle [deg] and blaze angle theta of the 
-	echelle [deg]. Output will be the blaze efficiency and the blaze-
-	wavelength where the effeciency has its peak.
+	into crifors. Input should be in wavelengths [nm], order m, alpha 
+	angle of echelle [deg], sigma echelle [mm^-1], gamma angle of
+	echelle [deg] and blaze angle theta of the echelle [deg]. Output
+	will be the blaze efficiency and the blaze wavelength where the 
+	effeciency has its peak.
 	"""
 
 # -------------------------------------------------------------------- #
 import numpy as np
 
 
-def blaze_func(wavelength, m, Echelle_angle, sigma_echelle, gamma_echelle, blaze_angle):
+def blaze_func(wavelength, m, Echelle_angle, sigma_echelle_inv, gamma_echelle, blaze_angle):
 	
 	""" Converting variabels to proper units """
-	sigma_ech = 1e6/31.6					# nm
+	sigma_ech = 1e6/sigma_echelle_inv		# nm
 	alpha_ech = Echelle_angle * np.pi/180	# rad
-	gamma_ech = 3.8 * np.pi/180				# rad
-	blaze_angle = 63.5 * np.pi/180			# rad
+	gamma_ech = gamma_echelle * np.pi/180	# rad
+	blaze_angle = blaze_angle * np.pi/180	# rad
 	theta_blaze = alpha_ech - blaze_angle	# rad
 	D_alpha_ech = -3.23 * np.pi/180			# rad
 
-	# Approximated values more closely resembling Tino's excel-arc
+	#Approximated values more closely resembling Tino's excel-arc
 	#pi = 3.14159267
 	#sigma_ech = 31600
 	#alpha_ech=Echelle_angle * pi/180
