@@ -115,7 +115,7 @@ class Simulator(object):
 
             # Blaze function
             if self.blaze:
-                blaze_eff, lambda_blaze = blazefunc.blaze_func(mwaves, m, self.alpha_ech, self.sigma_ech_inv, self.gamma_ech, self.blaze_ech)
+                blaze_eff, lambda_blaze = blazefunc.blaze_func(mwaves, m, self.echang, self.sigma_ech_inv, self.gamma_ech, self.blaze_ech)
                 # New probability distribution with blaze efficiency embedded
                 mpdf = np.multiply(mpdf, blaze_eff)
 
