@@ -209,7 +209,7 @@ def main():
         ax1 = plt.subplot(gs[0])
         ax2 = plt.subplot(gs[1])
         ax1.imshow(simulator.outarr, origin="lower", interpolation='nearest', cmap="hot")
-        ax1.set_title("CRIRES+ %s-band, echang=%s" % (simulator.band, simulator.alpha_ech))
+        ax1.set_title("CRIRES+ %s-band, echang=%s" % (simulator.band, simulator.echang))
         ax2.plot(simulator.source_spectrum[0], simulator.source_spectrum[1])
         ax2.set_color_cycle(['red', 'orange', 'yellow', 'brown', 'black', 'darkgreen',
             'aquamarine',  'coral', 'maroon', 'springgreen'])
