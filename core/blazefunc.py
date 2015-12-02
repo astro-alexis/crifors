@@ -36,20 +36,20 @@ def blaze_func(wavelength, m, Echelle_angle, sigma_echelle_inv, gamma_echelle, b
 	#sigma_ech = 31600
 	#alpha_ech=Echelle_angle * pi/180
 	#gamma_ech = 3.8 * pi/180
-	#blaze_angle = 63.5 * pi/180
+	#blaze_angle = 63.76 * pi/180
 	#theta_blaze=alpha_ech-blaze_angle
 	#D_alpha_ech = -3.23 * pi/180
 
 
 	""" Blaze function that mimics the equations from Tino's excel-arc. """
-	beta=np.arcsin(wavelength * m / sigma_ech - np.sin(alpha_ech)) - D_alpha_ech - alpha_ech
-	nu = np.pi * sigma_ech * np.cos(alpha_ech) * (np.sin(theta_blaze) + np.sin(alpha_ech + D_alpha_ech + beta - blaze_angle)) / (wavelength * np.cos(theta_blaze))
+#	beta=np.arcsin(wavelength * m / sigma_ech - np.sin(alpha_ech)) - D_alpha_ech - alpha_ech
+#	nu = np.pi * sigma_ech * np.cos(alpha_ech) * (np.sin(theta_blaze) + np.sin(alpha_ech + D_alpha_ech + beta - blaze_angle)) / (wavelength * np.cos(theta_blaze))
 
 
 	""" Alternative version of the blaze-function. 
 	More closely aligned on the blaze wavelength than Tino's version. """
-#	beta = np.arcsin( (m * wavelength) / (sigma_ech * np.cos(gamma_ech)) - np.sin(alpha_ech))
-#	nu = (np.pi * sigma_ech * np.cos(blaze_angle) / wavelength) * (np.sin(beta - blaze_angle) + np.sin(theta_blaze))
+	beta = np.arcsin( (m * wavelength) / (sigma_ech * np.cos(gamma_ech)) - np.sin(alpha_ech))
+	nu = (np.pi * sigma_ech * np.cos(blaze_angle) / wavelength) * (np.sin(beta - blaze_angle) + np.sin(theta_blaze))
 
 	blaze_eff = (np.sin(nu) * np.sin(nu)) / (nu * nu)
 	lambda_blaze = 2 * sigma_ech * np.cos(gamma_ech) * np.sin(blaze_angle) / m	
