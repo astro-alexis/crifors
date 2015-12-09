@@ -33,7 +33,7 @@ def feed_spectrum(inst, m, wavelengths, pdf):
     return wavelengths, pdf
 
 
-def sample_cdf(wavelengths, pdf, n, flag=3):
+def sample_cdf(wavelengths, pdf, n, flag=0):
     """Returns an n sized array of wavelengths sampled from the pdf."""
     log.info("Sampling %s wavelengths from pdf...", n)
     out = np.empty(n, dtype=np.float64)
