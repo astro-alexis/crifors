@@ -95,7 +95,7 @@ def load_telluric_lines(line_list, plot=False):
         log.info("Loading '%s'.", species)
         data = np.load(species)
         fluxes.append(data[1])
-    waves = data[0]/10.0  				 # wavelengths are same for all species (Ångströms --> nm)
+    waves = data[0]/10.0  				 # wavelengths are same for all species (angstroms --> nm)
     log.info("Combining species together.")
     all_spec = np.prod(fluxes, axis=0) 	 # multiply all species together
     if plot:
