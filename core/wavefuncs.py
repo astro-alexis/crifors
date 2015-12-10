@@ -95,14 +95,14 @@ def load_telluric_lines(line_list, plot=False):
         log.info("Loading '%s'.", species)
         data = np.load(species)
         fluxes.append(data[1])
-    waves = data[0]   # wavelengths are same for all species
+    waves = data[0]/10.0  				 # wavelengths are same for all species (Ångströms --> nm)
     log.info("Combining species together.")
-    all_spec = np.prod(fluxes, axis=0)  # multiply all species together
+    all_spec = np.prod(fluxes, axis=0) 	 # multiply all species together
     if plot:
         log.info("Opening plot...")
         import matplotlib.pyplot as plt
         plt.plot(waves, all_spec)
-        plt.xlabel("Angstrom")
+        plt.xlabel("Wavelength (nm)")
         plt.ylabel("Normalized flux")
         #plt.xlim([wmin, wmax])
         plt.show()
@@ -131,8 +131,10 @@ def convolve_telluric_lines(line_list, wavelengths, intensities):
     log.info("Loading telluric species: %s", line_list)
     tellwaves, tellflux = load_telluric_lines(line_list)
     log.info("Convolving spectrum with telluric species.")
-    ftell = InterpolatedUnivariateSpline(tellwaves/10.0, tellflux, ext=3)
+    ftell = InterpolatedUnivariateSpline(tellwaves, tellflux, ext=3)
     tellflux = ftell(wavelengths)
+   
+
     return intensities * tellflux
 
 
