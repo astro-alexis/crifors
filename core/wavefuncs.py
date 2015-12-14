@@ -130,10 +130,12 @@ def convolve_telluric_lines(line_list, wavelengths, intensities):
     """
     log.info("Loading telluric species: %s", line_list)
     tellwaves, tellflux = load_telluric_lines(line_list)
+    tellflux[0], tellflux[-1] = (1.0, 1.0)
+
     log.info("Convolving spectrum with telluric species.")
     ftell = InterpolatedUnivariateSpline(tellwaves, tellflux, ext=3)
     tellflux = ftell(wavelengths)
-   
+
 
     return intensities * tellflux
 
