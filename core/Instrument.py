@@ -235,6 +235,7 @@ class Instrument(object):
         self.det_wl_lim = det_wl_lim
         self.wmin = self.det_wl_lim.min()
         self.wmax = self.det_wl_lim.max()
+        print "\n\n ** Test ** \n\n"
         if write:
             # WRITE TO ETC OUTPUT FILE
             pass
@@ -251,6 +252,9 @@ class Instrument(object):
         solvey = np.empty(ndims)
         interpx = np.empty(ndims)
         interpy = np.empty(ndims)
+        returnwaves_tmp = np.empty((self.det_dims[1]*self.det_dims[0], self.orders.size))
+        returncounts_tmp = np.empty((self.det_dims[1]*self.det_dims[0], self.orders.size))
+        
         for i,m in enumerate(self.orders):
             print i
             fn = os.path.splitext(codevparsed_path % (self.band, self.echang, m))[0] + ".npy"
@@ -286,8 +290,8 @@ class Instrument(object):
             print 'creating return arrays'
             returnx = np.empty(n)
             returny = np.empty(n)
-            returnwaves = np.empty((1, 1))            # dummy
-            returncounts = np.empty((1, 1), dtype=np.uint16)  # dummy
+            returnwaves = np.zeros((nxpix*nypix), dtype=np.float64) 
+            returncounts = np.zeros((nxpix*nypix), dtype=np.uint16)
 
             # require
             slit_x = np.require(slit_x, requirements=ci.req_in, dtype=np.float64)
@@ -311,6 +315,17 @@ class Instrument(object):
             solvey[:, i] = returny
             interpx[:, i] = xmid
             interpy[:, i] = ymid
+            returnwaves_tmp[:,i] = returnwaves
+            returncounts_tmp[:,i] = returncounts
+
+        # Making a wavemap that shows wavelengths rather than counts for each pixel
+        returnwaves_norm = returnwaves_tmp/returncounts_tmp		# Normalising returnwaves by number of counts
+        returnwaves_norm[np.where(np.isnan(returnwaves_norm))]=0
+        returnwaves_out=returnwaves_norm[np.array(np.arange(0, np.size(returnwaves))), np.array(0)]			# First order in band
+        for o in range(1, np.size(self.orders)):															# Starting from second order in band
+            returnwaves_out += returnwaves_norm[np.array(np.arange(0, np.size(returnwaves))), np.array(o)]	# Adding new wavelengths to pixels
+            ind_tmp = np.where(returnwaves_out > np.max(returnwaves_norm))	# Some orders overlap with wavelengths, thus adding them together           
+            returnwaves_out[ind_tmp] /= 2.0		# Take mean of added wavelengths
 
         solvexoff = (np.max(solvex[10, :]) + np.min(solvex[10, :])) / 2.0
         solveyoff = (np.max(solvey[10, :]) + np.min(solvey[10, :])) / 2.0
