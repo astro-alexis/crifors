@@ -70,7 +70,8 @@ void raytrace_interp_bin(
     const double* restrict wl,                /* wavelengths, size n */
     const double* restrict slitx,             /* slit location */
     const double* restrict slity,             /* slit location */
-    unsigned long* restrict out) {
+    unsigned long* restrict out,
+    double* restrict outwaves) {			  /* Wavelengths for wavemap */
   const double YPIX_1_2 = (double)NYPIX/2.0;
   const double X_OFF_L = (double)NXPIX/6.0;
   const double X_OFF_M = X_OFF_L + (double)NYPIX;
@@ -136,6 +137,7 @@ void raytrace_interp_bin(
       iy = (int)floor(ydp + YPIX_1_2);
       if (iy >= 0 && iy < NYPIX) {
         out[ix+NXPIX*iy] += 1;
+        outwaves[ix+NXPIX*iy] += wl[i];
       }
     }
     /* MIDDLE DETECTOR */
@@ -148,6 +150,7 @@ void raytrace_interp_bin(
       iy = (int)floor(ydp + YPIX_1_2);
       if (iy >= 0 && iy < NYPIX) {
         out[ix+NXPIX*iy] += 1;
+        outwaves[ix+NXPIX*iy] += wl[i];
       }
     }
     /* RIGHT DETECTOR */
@@ -160,6 +163,7 @@ void raytrace_interp_bin(
       iy = (int)floor(ydp + YPIX_1_2);
       if (iy >= 0 && iy < NYPIX) {
         out[ix+NXPIX*iy] += 1;
+        outwaves[ix+NXPIX*iy] += wl[i];
       }
     }
     progress_bar(i, n);
