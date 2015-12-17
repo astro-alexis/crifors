@@ -367,12 +367,12 @@ void raytrace_solve_general(
             if (BLAZE_FLAG == 1) {
               u = gsl_rng_uniform(r);
               if (u <= blaze_eff) {
-                outwaves[ix+NXPIX*iy] += wi;
+                outwaves[ix+NXPIX*iy] += li;
                 outcounts[ix+NXPIX*iy] += 1;
               }
             }
             else {
-              outwaves[ix+NXPIX*iy] += wi;
+              outwaves[ix+NXPIX*iy] += li;
               outcounts[ix+NXPIX*iy] += 1;
             }
           }
