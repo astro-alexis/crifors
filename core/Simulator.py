@@ -77,7 +77,11 @@ class Simulator(object):
         # READ POLARIMETER PARAMETERS IF NECESSARY
         if self.polarimeter:
                 self.import_polarimeter()
-
+                
+        # Defining outwaves for wavemap        
+        self.outwaves = np.empty(self.det_dims)
+        self.outwaves = np.require(self.outwaves, requirements=ci.req_out,
+            dtype=np.float64)
 
     def run(self):
         """
@@ -172,6 +176,9 @@ class Simulator(object):
                 return self.phx_model()
             elif self.source[0].lower() in "f flatfield".split():
                 return self.flatfield()
+            elif self.source[0].lower() in "w wavemap".split():
+				self.wavemap = True
+				return self.phx_model()    
             else:
                 return self.import_one_file()
         elif len(self.source) == 0:
@@ -362,13 +369,19 @@ class Simulator(object):
             ci.array_1d_double,     # waves
             ci.array_1d_double,     # slit_x
             ci.array_1d_double,     # slit_y
-            ci.array_2d_uint]       # outarr
+            ci.array_2d_uint,       # outarr
+            ci.array_2d_double]		# outwaves
         func.restype = None
         log.info("Raytracing order %s...", m)
         func(nxpix, nypix, dpix, xdl_0, xdm_0, xdr_0,
             ydl_0, ydm_0, ydr_0, tau_dl, tau_dm, tau_dr, slit_ratio, n, cn, wl,
             xbot, xmid, xtop, ybot, ymid, ytop, phi, waves, slit_x, slit_y,
-            self.outarr)
+            self.outarr, self.outwaves)
+
+		# For output wavelengths in wavemap
+        self.outwaves /= self.outarr							# Normalising wavelengths to number of counts
+        self.outwaves[np.where(np.isnan(self.outwaves))]=0		# Remove nan
+        self.outwaves[np.where(self.outwaves == np.inf)]=0		# Remove inf
 
 
     def solve(self, m, waves, slit_x, slit_y):
