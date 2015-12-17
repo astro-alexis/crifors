@@ -436,7 +436,8 @@ class Simulator(object):
         wavelengths = physics.redshift(self.source_spectrum[0]*1.e-9, self.rv) * 1.e9
         flux = self.source_spectrum[1]
         # ADD TELLURIC LINES
-        if self.telluric and self.FITS_SOURCE == "STAR":
+        #if self.telluric and self.FITS_SOURCE == "STAR":
+        if self.telluric:
             flux = wf.convolve_telluric_lines(self.telluric, wavelengths, flux)
         # CONVERT FLUX TO NUMBER DENSITY
         if self.FITS_SOURCE == "STAR":
