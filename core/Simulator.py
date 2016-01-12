@@ -63,10 +63,11 @@ class Simulator(object):
         # SETUP RAYTRACING MODEL
         self.modelfunc = self.init_raytrace()
 
-        # INITIALIZE DATA
-        self.outarr = np.empty(self.det_dims)
-        self.outarr = np.require(self.outarr, requirements=ci.req_out,
-            dtype=np.uint)
+        # INITIALIZE DATA 
+        if (self.model=="interp"):		# Will overwrite model=solve data otherwise
+             self.outarr = np.empty(self.det_dims)
+             self.outarr = np.require(self.outarr, requirements=ci.req_out,
+                 dtype=np.uint)
         self.nrays_tot = 0
         self.nrays_per_order = []
         self.mean_rays_per_pixel = 0
@@ -74,14 +75,14 @@ class Simulator(object):
         self.min_rays_per_pixel = 0
         self.max_rays_per_pixel = 0
 
-        # READ POLARIMETER PARAMETERS IF NECESSARY
-        if self.polarimeter:
-                self.import_polarimeter()
-                
-        # Defining outwaves for wavemap        
         self.outwaves = np.empty(self.det_dims)
         self.outwaves = np.require(self.outwaves, requirements=ci.req_out,
             dtype=np.float64)
+
+        # READ POLARIMETER PARAMETERS IF NECESSARY
+        if self.polarimeter:
+                self.import_polarimeter()
+
 
     def run(self):
         """
@@ -105,23 +106,24 @@ class Simulator(object):
         """
 
         waves, pdf = self.source_spectrum[0], self.source_spectrum[1]
+        
         pdf_tot = scipy.integrate.simps(pdf, waves)
         t0 = time.time()
         d0 = time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime())
 
         self.mwaves_mpdfs = []
-
+        
         # START SIMULATION
         log.info("Beginning simulation, %s", d0)
         for m in self.orders:
             # pre sample wavelengths
             mwaves, mpdf = wf.feed_spectrum(self, m, waves, pdf)
-
+            
             # Blaze function
             if self.blaze:
                 blaze_eff, lambda_blaze = blazefunc.blaze_func(mwaves, m, self.echang, self.sigma_ech_inv, self.gamma_ech, self.blaze_ech)
                 # New probability distribution with blaze efficiency embedded
-                mpdf = np.multiply(mpdf, blaze_eff)
+                mpdf = np.multiply(mpdf, blaze_eff)            
 
             # save mwaves and mwaves_mpdfs
             self.mwaves_mpdfs.append((mwaves,mpdf))
@@ -155,15 +157,14 @@ class Simulator(object):
             self.modelfunc(m, waves_in, slit_x, slit_y)
         self.sim_time = time.time() - t0
         inds = np.where(self.outarr != 0)
+
         self.mean_rays_per_pixel = np.mean(self.outarr[inds])
         self.med_rays_per_pixel = np.median(self.outarr[inds])
         self.min_rays_per_pixel = np.min(self.outarr[inds])
         self.max_rays_per_pixel = np.max(self.outarr[inds])
         self.nrays_tot = np.sum(self.outarr[inds])
-
-
+        	        
     # =========================[ initfuncs ]===================================
-
 
     def import_source_spectrum(self):
         if len(self.source) > 2:
@@ -177,8 +178,10 @@ class Simulator(object):
             elif self.source[0].lower() in "f flatfield".split():
                 return self.flatfield()
             elif self.source[0].lower() in "w wavemap".split():
-				self.wavemap = True
-				return self.phx_model()    
+				#return self.wavemap()
+				self.wavemap=True
+				return self.phx_model()
+				
             else:
                 return self.import_one_file()
         elif len(self.source) == 0:
@@ -284,6 +287,7 @@ class Simulator(object):
         return slit_x, slit_y + (offset*sign)
 
     def interp(self, m, waves, slit_x, slit_y):
+        
         # fn = os.path.join(codevparsednpy_path % (self.band, self.echang, m))
         # log.info("Loading '%s'", fn)
         _m, wl, xb, xmid, xt, yb, ymid, yt, slitheight, phi = get_codev_files(self, m)
@@ -309,8 +313,8 @@ class Simulator(object):
         # APPEND NEW ENDPOINTS
         wmin = np.concatenate((wl, waves)).min() - buff
         wmax = np.concatenate((wl, waves)).max() + buff
-        wl = np.insert(wl, 0, wmin)
-        wl = np.append(wl, wmax)
+        wl = np.insert(wl, 0, wmin)									
+        wl = np.append(wl, wmax)										
         xbot = np.insert(xbot, 0, fxb(wmin))
         xbot = np.append(xbot, fxb(wmax))
         xmid = np.insert(xmid, 0, fxm(wmin))
@@ -369,21 +373,22 @@ class Simulator(object):
             ci.array_1d_double,     # waves
             ci.array_1d_double,     # slit_x
             ci.array_1d_double,     # slit_y
-            ci.array_2d_uint,       # outarr
-            ci.array_2d_double]		# outwaves
+            ci.array_2d_uint,		# outarr
+            ci.array_2d_double]		# outwaves			Hmm....		       
         func.restype = None
         log.info("Raytracing order %s...", m)
         func(nxpix, nypix, dpix, xdl_0, xdm_0, xdr_0,
             ydl_0, ydm_0, ydr_0, tau_dl, tau_dm, tau_dr, slit_ratio, n, cn, wl,
             xbot, xmid, xtop, ybot, ymid, ytop, phi, waves, slit_x, slit_y,
             self.outarr, self.outwaves)
-
+        
         self.outwaves /= self.outarr		# Normalising wavelengths to number of counts
         self.outwaves[np.where(np.isnan(self.outwaves))]=0
         self.outwaves[np.where(self.outwaves == np.inf)]=0
 
 
     def solve(self, m, waves, slit_x, slit_y):
+
         # SEND TO C FUNCTION
         blaze_flag = int(self.blaze)
         return_mode = 0
@@ -421,8 +426,6 @@ class Simulator(object):
             tau_dl, tau_dm, tau_dr, slit_x, slit_y, waves, returnx, returny,
             returnwaves, self.outarr)
 
-
-
     # ======================[ spectrum methods ]===============================
 
 
@@ -431,21 +434,23 @@ class Simulator(object):
         if self.factor:
             log.info("Multiplying input wavelengths by factor %s.", self.factor)
             wavelengths = self.source_spectrum[0] * self.factor
+      
         # REDSHIFT SPECTRA
         wavelengths = physics.redshift(self.source_spectrum[0]*1.e-9, self.rv) * 1.e9
         flux = self.source_spectrum[1]
+      
         # ADD TELLURIC LINES
-        #if self.telluric and self.FITS_SOURCE == "STAR":
         if self.telluric:
             flux = wf.convolve_telluric_lines(self.telluric, wavelengths, flux)
+
         # CONVERT FLUX TO NUMBER DENSITY
         if self.FITS_SOURCE == "STAR":
             pdf = physics.energy2counts(wavelengths, flux)
         else:
             pdf = flux
+
         # TRUNCATE TO SPECTROGRAPH LIMIT WITH A SMALL BUFFER AS CUSHION
         self.source_spectrum = wf.truncate_spectrum(self, wavelengths, pdf)
-
 
     def import_one_file(self):
         desc = "Importing source spectrum: object simulation"
