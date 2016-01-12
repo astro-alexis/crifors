@@ -142,6 +142,7 @@ class Instrument(object):
         # ADDITIONAL PARAMETERS AND CONVENIENCE CALCULATIONS
         if self.telluric:
             self.telluric = tell_species
+            
         self.slit_ratio = self.slit_height / self.slit_width
         self.sig_x_psf = self.seeing / (2. * np.sqrt(2. * np.e))
         self.sig_y_psf = self.seeing / (2. * np.sqrt(2. * np.e))
@@ -235,7 +236,6 @@ class Instrument(object):
         self.det_wl_lim = det_wl_lim
         self.wmin = self.det_wl_lim.min()
         self.wmax = self.det_wl_lim.max()
-        print "\n\n ** Test ** \n\n"
         if write:
             # WRITE TO ETC OUTPUT FILE
             pass
@@ -245,16 +245,19 @@ class Instrument(object):
 
         import matplotlib.pyplot as plt
         blaze_flag = int(self.blaze)
-        return_mode = 1   # return in mm
+        return_mode = 0   # return in mm		# was return mode 1
 
         ndims = (21, self.orders.size)
+ 
         solvex = np.empty(ndims)
         solvey = np.empty(ndims)
         interpx = np.empty(ndims)
         interpy = np.empty(ndims)
+        det_wl_lim = np.empty(ndims)
+
         returnwaves_tmp = np.empty((self.det_dims[1]*self.det_dims[0], self.orders.size))
         returncounts_tmp = np.empty((self.det_dims[1]*self.det_dims[0], self.orders.size))
-        
+         
         for i,m in enumerate(self.orders):
             print i
             fn = os.path.splitext(codevparsed_path % (self.band, self.echang, m))[0] + ".npy"
@@ -292,7 +295,7 @@ class Instrument(object):
             returny = np.empty(n)
             returnwaves = np.zeros((nxpix*nypix), dtype=np.float64) 
             returncounts = np.zeros((nxpix*nypix), dtype=np.uint16)
-
+           
             # require
             slit_x = np.require(slit_x, requirements=ci.req_in, dtype=np.float64)
             slit_y = np.require(slit_y, requirements=ci.req_in, dtype=np.float64)
@@ -301,7 +304,7 @@ class Instrument(object):
             returny = np.require(returny, requirements=ci.req_out, dtype=np.float64)
             returnwaves = np.require(returnwaves, requirements=ci.req_out, dtype=np.float64)
             returncounts = np.require(returncounts, requirements=ci.req_out, dtype=np.uint)
-
+                       
             func = ci.solve
             log.info("Raytracing order %s...", m)
             func(blaze_flag, return_mode, n, m, nxpix, nypix, f_col_1, f_col_2,
@@ -309,14 +312,31 @@ class Instrument(object):
                 f_cam, f_cam_1, dpix, xdl_0, xdm_0, xdr_0, ydl_0, ydm_0, ydr_0,
                 tau_dl, tau_dm, tau_dr, slit_x, slit_y, wl, returnx, returny,
                 returnwaves, returncounts)
-            #print returnx, returny
             print m, 'done', n
             solvex[:, i] = returnx
             solvey[:, i] = returny
             interpx[:, i] = xmid
             interpy[:, i] = ymid
+
             returnwaves_tmp[:,i] = returnwaves
             returncounts_tmp[:,i] = returncounts
+            det_wl_lim[:, i] = returnx		
+
+        self.det_wl_lim = det_wl_lim
+        self.wmin = self.det_wl_lim.min()
+        self.wmax = self.det_wl_lim.max()
+        
+        # Adding counts from each order to pixels
+        counts_tmp = np.empty(np.size(returncounts))
+        for j in range(0, np.size(self.orders)):
+            counts_tmp += returncounts_tmp[:, j]
+			
+		# Reshaping array to fit same measurements as model=interp
+        counts_tmp = counts_tmp.reshape(2048, 6144)
+        
+        # Defining same output name as for model=interp
+        # (This could probably be done in a better way)
+        self.outarr=counts_tmp
 
         # Normalising returnwaves by number of counts
         returnwaves_norm = returnwaves_tmp/returncounts_tmp
@@ -329,9 +349,9 @@ class Instrument(object):
             returnwaves_out += returnwaves_norm[np.array(np.arange(0, np.size(returnwaves))),
              np.array(o)]
 			# Some orders overlap with wavelengths, thus adding them together
-            ind_tmp = np.where(returnwaves_out > np.max(returnwaves_norm)) 
-            returnwaves_out[ind_tmp] /= 2.0		# Take mean of added wavelengths
-
+            ind_tmp = np.where(returnwaves_out > np.max(returnwaves_norm))
+            returnwaves_out[ind_tmp] /= 2.0		 # Take mean of added wavelengths
+    
         solvexoff = (np.max(solvex[10, :]) + np.min(solvex[10, :])) / 2.0
         solveyoff = (np.max(solvey[10, :]) + np.min(solvey[10, :])) / 2.0
         interpxoff = (np.max(interpx[10, :]) + np.min(interpx[10, :])) / 2.0
@@ -348,6 +368,11 @@ class Instrument(object):
         ax = fig.add_subplot(111, aspect='equal')
         ax.scatter(solvex, solvey, c='r', marker='x', label='solve')
         ax.scatter(interpx, interpy, c='b', marker='o', label='interp')
-        plt.legend()
+        plt.legend()        
         plt.show()
-        exit()
+        
+        if write:
+            # WRITE TO ETC OUTPUT FILE
+            pass
+        pass
+      #  exit()
