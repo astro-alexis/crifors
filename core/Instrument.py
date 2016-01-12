@@ -318,13 +318,18 @@ class Instrument(object):
             returnwaves_tmp[:,i] = returnwaves
             returncounts_tmp[:,i] = returncounts
 
-        # Making a wavemap that shows wavelengths rather than counts for each pixel
-        returnwaves_norm = returnwaves_tmp/returncounts_tmp		# Normalising returnwaves by number of counts
-        returnwaves_norm[np.where(np.isnan(returnwaves_norm))]=0
-        returnwaves_out=returnwaves_norm[np.array(np.arange(0, np.size(returnwaves))), np.array(0)]			# First order in band
+        # Normalising returnwaves by number of counts
+        returnwaves_norm = returnwaves_tmp/returncounts_tmp
+        indnan=np.where(np.isnan(returnwaves_norm))
+        returnwaves_norm[indnan]=0
+        returnwaves_out=returnwaves_norm[np.array(np.arange(0, np.size(returnwaves))),
+         np.array(0)]			# First order in band
         for o in range(1, np.size(self.orders)):															# Starting from second order in band
-            returnwaves_out += returnwaves_norm[np.array(np.arange(0, np.size(returnwaves))), np.array(o)]	# Adding new wavelengths to pixels
-            ind_tmp = np.where(returnwaves_out > np.max(returnwaves_norm))	# Some orders overlap with wavelengths, thus adding them together           
+            # Adding new wavelengths to pixels
+            returnwaves_out += returnwaves_norm[np.array(np.arange(0, np.size(returnwaves))),
+             np.array(o)]
+			# Some orders overlap with wavelengths, thus adding them together
+            ind_tmp = np.where(returnwaves_out > np.max(returnwaves_norm)) 
             returnwaves_out[ind_tmp] /= 2.0		# Take mean of added wavelengths
 
         solvexoff = (np.max(solvex[10, :]) + np.min(solvex[10, :])) / 2.0
