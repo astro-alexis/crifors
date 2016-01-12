@@ -71,7 +71,7 @@ void raytrace_interp_bin(
     const double* restrict slitx,             /* slit location */
     const double* restrict slity,             /* slit location */
     unsigned long* restrict out,
-    double* restrict outwaves) {			  /* Wavelengths for wavemap */
+    double* restrict outwaves) {				// Hmmm....
   const double YPIX_1_2 = (double)NYPIX/2.0;
   const double X_OFF_L = (double)NXPIX/6.0;
   const double X_OFF_M = X_OFF_L + (double)NYPIX;
@@ -113,6 +113,7 @@ void raytrace_interp_bin(
   gsl_spline_init(spline7, cwl, cphi, cn);
 
   for (i=0; i<n; ++i) {
+
     phi = gsl_spline_eval(spline7, wl[i], acc7);
     sx = slitx[i]*cos(phi) - slity[i]*sin(phi);
     sy = slitx[i]*sin(phi) + slity[i]*cos(phi);
@@ -137,7 +138,7 @@ void raytrace_interp_bin(
       iy = (int)floor(ydp + YPIX_1_2);
       if (iy >= 0 && iy < NYPIX) {
         out[ix+NXPIX*iy] += 1;
-        outwaves[ix+NXPIX*iy] += wl[i];
+        outwaves[ix+NXPIX*iy] += wl[i];	
       }
     }
     /* MIDDLE DETECTOR */
@@ -168,6 +169,8 @@ void raytrace_interp_bin(
     }
     progress_bar(i, n);
   }
+  
+  
   gsl_spline_free(spline1);
   gsl_spline_free(spline2);
   gsl_spline_free(spline3);
@@ -260,7 +263,7 @@ void raytrace_solve_general(
   const double X_OFF_L = (double)NXPIX/6.0;
   const double X_OFF_M = X_OFF_L + (double)NYPIX;
   const double X_OFF_R = X_OFF_M + (double)NYPIX;
-  const int NXPIX_1_3 = NXPIX / 3;
+  const int NXPIX_1_3 = NXPIX / 3;	
   const int NXPIX_2_3 = 2 * NXPIX_1_3;
   const double TAUDL = cradians(TAU_DL);
   const double TAUDM = cradians(TAU_DM);
@@ -273,18 +276,20 @@ void raytrace_solve_general(
   double n_g;
   double beta;
   double blaze_eff;
-  long ix; /* x coordinate [pix] */
-  long iy; /* y coordinate [pix] */
+  long ix; /* x coordinate [pix] */		
+  long iy; /* y coordinate [pix] */		
   double x, x0, xi, xd, xt, y, y0, yd, yi, yt, z, z0, zt, fcc;
   double xdpld, xdpmd, xdprd;
   unsigned long i;   /* iterator */
+
+  double xdp, ydp;
 
   // RANDOM NUMBER GENERATOR INITIALIZATION
   double u;
   gsl_rng* r = gsl_rng_alloc(gsl_rng_taus); /* global rng generator */
   long seed = time(NULL);
   gsl_rng_set(r, seed);                     /* seed the rng */
-
+  
   for (i=0; i<n; ++i) {
     xi = xslit[i];       /* x coord */
     yi = yslit[i];       /* y coord */
@@ -357,26 +362,52 @@ void raytrace_solve_general(
 
     switch (RETURN_MODE) {
       /* BIN PIXELS */
-      case 0:
-        xd /= DPIX;
-        yd /= DPIX;
-        ix = (int)floor(xd + X_OFF_L);
-        if (ix >= 0 && ix < NXPIX_1_3) {
-          iy = (int)floor(yd + YPIX_1_2);
-          if (iy >= 0 && iy < NYPIX) {
-            if (BLAZE_FLAG == 1) {
-              u = gsl_rng_uniform(r);
-              if (u <= blaze_eff) {
-                outwaves[ix+NXPIX*iy] += li;
-                outcounts[ix+NXPIX*iy] += 1;
-              }
-            }
-            else {
-              outwaves[ix+NXPIX*iy] += li;
-              outcounts[ix+NXPIX*iy] += 1;
-            }
-          }
-        }
+      case 0:					// Now similar to case 1: Exact locations
+   //     xd /= DPIX;
+   //     yd /= DPIX;
+        returnx[i] = xd;
+        returny[i] = yd; 
+
+    /* LEFT DETECTOR */
+    xdp =  xd-XDL_0 + (xd-XDL_0)*cos(TAUDL) + (yd-YDL_0)*sin(TAUDL);
+    ydp =  yd-YDL_0 - (xd-XDL_0)*sin(TAUDL) + (yd-YDL_0)*cos(TAUDL);
+    xdp /= (DPIX*2.0);  // NOT QUITE SURE WHY WE NEED THIS
+    ydp /= (DPIX*2.0);
+    ix = (int)floor(xdp + X_OFF_L);
+    if (ix >= 0 && ix < NXPIX_1_3) {
+      iy = (int)floor(ydp + YPIX_1_2);
+      if (iy >= 0 && iy < NYPIX) {
+        outcounts[ix+NXPIX*iy] += 1;
+        outwaves[ix+NXPIX*iy] += li;	
+      }
+    }
+    /* MIDDLE DETECTOR */
+    xdp = xd-XDM_0 + (xd-XDM_0)*cos(TAUDM) + (yd-YDM_0)*sin(TAUDM);
+    ydp = yd-YDM_0 - (xd-XDM_0)*sin(TAUDM) + (yd-YDM_0)*cos(TAUDM);
+    xdp /= (DPIX*2.0);
+    ydp /= (DPIX*2.0);
+    ix = (int)floor(xdp + X_OFF_M);
+    if (ix >= NXPIX_1_3 && ix < NXPIX_2_3) {
+      iy = (int)floor(ydp + YPIX_1_2);
+      if (iy >= 0 && iy < NYPIX) {
+        outcounts[ix+NXPIX*iy] += 1;
+        outwaves[ix+NXPIX*iy] += li;
+      }
+    }
+    /* RIGHT DETECTOR */
+    xdp = xd-XDR_0 + (xd-XDR_0)*cos(TAUDR) + (yd-YDR_0)*sin(TAUDR);
+    ydp = yd-YDR_0 - (xd-XDR_0)*sin(TAUDR) + (yd-YDR_0)*cos(TAUDR);
+    xdp /= (DPIX*2.0);
+    ydp /= (DPIX*2.0);
+    ix = (int)floor(xdp + X_OFF_R);
+    if (ix >= NXPIX_2_3 && ix < NXPIX) {
+      iy = (int)floor(ydp + YPIX_1_2);
+      if (iy >= 0 && iy < NYPIX) {
+        outcounts[ix+NXPIX*iy] += 1;
+        outwaves[ix+NXPIX*iy] += li;
+      
+		       }   
+        }			
         break;
 
       /* RETURN EXACT LOCATIONS [mm] */
