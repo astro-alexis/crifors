@@ -187,9 +187,8 @@ def write_to_fits(sim, gzip=True):
 
     # create PrimaryHDU object to encapsulate data
     log.info("Creating HDU...")
-  #  hdu = fits.PrimaryHDU(np.asarray(sim.outarr, dtype=np.uint16))
-    if sim.wavemap:
-		hdu = fits.PrimaryHDU(np.asarray(sim.outwaves, dtype=np.float64))
+    if (sim.wavemap==True):
+		hdu = fits.PrimaryHDU(np.asarray(sim.outwaves, dtype=np.float64))		
     else:
 		hdu = fits.PrimaryHDU(np.asarray(sim.outarr, dtype=np.uint16))
 
