@@ -378,10 +378,9 @@ class Simulator(object):
             xbot, xmid, xtop, ybot, ymid, ytop, phi, waves, slit_x, slit_y,
             self.outarr, self.outwaves)
 
-		# For output wavelengths in wavemap
-        self.outwaves /= self.outarr							# Normalising wavelengths to number of counts
-        self.outwaves[np.where(np.isnan(self.outwaves))]=0		# Remove nan
-        self.outwaves[np.where(self.outwaves == np.inf)]=0		# Remove inf
+        self.outwaves /= self.outarr		# Normalising wavelengths to number of counts
+        self.outwaves[np.where(np.isnan(self.outwaves))]=0
+        self.outwaves[np.where(self.outwaves == np.inf)]=0
 
 
     def solve(self, m, waves, slit_x, slit_y):
