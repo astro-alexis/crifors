@@ -64,10 +64,9 @@ class Simulator(object):
         self.modelfunc = self.init_raytrace()
 
         # INITIALIZE DATA 
-        if (self.model=="interp"):		# Will overwrite model=solve data otherwise
-             self.outarr = np.empty(self.det_dims)
-             self.outarr = np.require(self.outarr, requirements=ci.req_out,
-                 dtype=np.uint)
+        self.outarr = np.empty(self.det_dims)
+        self.outarr = np.require(self.outarr, requirements=ci.req_out,
+            dtype=np.uint)
         self.nrays_tot = 0
         self.nrays_per_order = []
         self.mean_rays_per_pixel = 0
@@ -409,6 +408,7 @@ class Simulator(object):
         returnx = np.empty(1)
         returny = np.empty(1)
         returnwaves = np.zeros(self.det_dims)
+        returncounts = np.zeros(self.det_dims)
         xdl_0 = self.xdl_0
         xdm_0 = self.xdm_0
         xdr_0 = self.xdr_0
@@ -419,12 +419,52 @@ class Simulator(object):
         tau_dm = self.tau_dm
         tau_dr = self.tau_dr
         func = ci.raytrace.raytrace_solve_general
+        #
+        func.argtypes = [
+            ct.c_int,               # blaze_flag
+            ct.c_int,               # return_mode
+            ct.c_ulong,             # n (slit and waves)
+            ct.c_uint,              # m
+            ct.c_int,               # nxpix
+            ct.c_int,               # nypix
+            ct.c_double,            # f_col_1
+            ct.c_double,            # f_col_2
+            ct.c_double,            # alpha_ech
+            ct.c_double,            # blaze_ech
+            ct.c_double,            # gamma_ech
+            ct.c_double,            # sigma_ech
+            ct.c_double,            # alpha_cd
+            ct.c_double,            # sigma_cd
+            ct.c_double,            # f_cam
+            ct.c_double,            # f_cam_1
+            ct.c_double,            # dpix
+            ct.c_double,            # xdl_0
+            ct.c_double,            # xlm_0
+            ct.c_double,            # xdr_0
+            ct.c_double,            # ydl_0    
+            ct.c_double,            # ydm_0
+            ct.c_double,            # ydr_0
+            ct.c_double,            # tau_dl
+            ct.c_double,            # tau_dm
+            ct.c_double,            # tau_dr
+            ci.array_1d_double,     # slit_x
+            ci.array_1d_double,     # slit_y
+            ci.array_1d_double,     # waves
+            ci.array_1d_double,     # returnx
+            ci.array_1d_double,     # returny
+            ci.array_2d_double,     # returnwaves		# 1d ?
+            ci.array_2d_uint]       # returncounts		# 1d uint ? 
+        func.restype = None        
         log.info("Raytracing order %s...", m)
         func(blaze_flag, return_mode, n, m, nxpix, nypix, f_col_1, f_col_2,
             alpha_ech, blaze_ech, gamma_ech, sigma_ech, alpha_cd, sigma_cd,
             f_cam, f_cam_1, dpix, xdl_0, xdm_0, xdr_0, ydl_0, ydm_0, ydr_0,
             tau_dl, tau_dm, tau_dr, slit_x, slit_y, waves, returnx, returny,
-            returnwaves, self.outarr)
+            self.outwaves, self.outarr)	# returnwaves/counts
+            
+        self.outwaves /= self.outarr		# Normalising wavelengths to number of counts
+        self.outwaves[np.where(np.isnan(self.outwaves))]=0
+        self.outwaves[np.where(self.outwaves == np.inf)]=0
 
     # ======================[ spectrum methods ]===============================
 
@@ -566,7 +606,7 @@ class Simulator(object):
     def wavetrace():
         desc = "1D wavelength tracing"
 
-    def solve(inst, settings):
+    def solve2(inst, settings):		# What is this? It interrupts when calling --model=solve
         log.info("Solving.")
         sys.exit(0)
 
