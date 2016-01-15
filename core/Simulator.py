@@ -156,6 +156,9 @@ class Simulator(object):
             self.modelfunc(m, waves_in, slit_x, slit_y)
         self.sim_time = time.time() - t0
         inds = np.where(self.outarr != 0)
+        
+        # Normalising wavelengths for wavemap
+        self.outwaves[inds] /= self.outarr[inds]
 
         self.mean_rays_per_pixel = np.mean(self.outarr[inds])
         self.med_rays_per_pixel = np.median(self.outarr[inds])
@@ -380,10 +383,6 @@ class Simulator(object):
             ydl_0, ydm_0, ydr_0, tau_dl, tau_dm, tau_dr, slit_ratio, n, cn, wl,
             xbot, xmid, xtop, ybot, ymid, ytop, phi, waves, slit_x, slit_y,
             self.outarr, self.outwaves)
-        
-        self.outwaves /= self.outarr		# Normalising wavelengths to number of counts
-        self.outwaves[np.where(np.isnan(self.outwaves))]=0
-        self.outwaves[np.where(self.outwaves == np.inf)]=0
 
 
     def solve(self, m, waves, slit_x, slit_y):
@@ -461,10 +460,7 @@ class Simulator(object):
             f_cam, f_cam_1, dpix, xdl_0, xdm_0, xdr_0, ydl_0, ydm_0, ydr_0,
             tau_dl, tau_dm, tau_dr, slit_x, slit_y, waves, returnx, returny,
             self.outwaves, self.outarr)	# returnwaves/counts
-            
-        self.outwaves /= self.outarr		# Normalising wavelengths to number of counts
-        self.outwaves[np.where(np.isnan(self.outwaves))]=0
-        self.outwaves[np.where(self.outwaves == np.inf)]=0
+
 
     # ======================[ spectrum methods ]===============================
 
