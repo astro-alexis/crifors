@@ -267,6 +267,99 @@ class Instrument(object):
         self.det_wl_lim = det_wl_lim
         self.wmin = self.det_wl_lim.min()
         self.wmax = self.det_wl_lim.max()
+        
+###
+        import matplotlib.pyplot as plt
+        blaze_flag = int(self.blaze)
+        return_mode = 1   # return in mm		# was return mode 1
+
+        ndims = (21, self.orders.size)
+ 
+        solvex = np.empty(ndims)
+        solvey = np.empty(ndims)
+        interpx = np.empty(ndims)
+        interpy = np.empty(ndims)
+         
+        for i,m in enumerate(self.orders):
+            print i
+            fn = os.path.splitext(codevparsed_path % (self.band, self.echang, m))[0] + ".npy"
+            _m, wl, xbot, xmid, xtop, yb, ymid, yt, slitheight, phi = np.load(fn).T
+            n = wl.size
+
+            print 'assigning parameters'
+            slit_x = np.zeros(n)
+            slit_y = np.zeros(n)
+            nxpix = self.det_dims[1]
+            nypix = self.det_dims[0]
+            dpix = self.dpix
+            f_col_1 = self.f_col_1
+            f_col_2 = self.f_col_2
+            alpha_ech = self.alpha_ech
+            blaze_ech = self.blaze_ech
+            gamma_ech = self.gamma_ech
+            sigma_ech = 1e6 / self.sigma_ech_inv
+            alpha_cd = self.alpha_cd
+            sigma_cd = 1e6 / self.sigma_cd_inv
+            f_cam = self.f_cam
+            f_cam_1 = self.f_cam_1
+            xdl_0 = self.xdl_0
+            xdm_0 = self.xdm_0
+            xdr_0 = self.xdr_0
+            ydl_0 = self.ydl_0
+            ydm_0 = self.ydm_0
+            ydr_0 = self.ydr_0
+            tau_dl = self.tau_dl
+            tau_dm = self.tau_dm
+            tau_dr = self.tau_dr
+
+            print 'creating return arrays'
+            returnx = np.empty(n)
+            returny = np.empty(n)
+            returnwaves = np.empty(ndims) 
+            returncounts = np.empty(ndims)
+           
+            # require
+            slit_x = np.require(slit_x, requirements=ci.req_in, dtype=np.float64)
+            slit_y = np.require(slit_y, requirements=ci.req_in, dtype=np.float64)
+            wl = np.require(wl, requirements=ci.req_in, dtype=np.float64)
+            returnx = np.require(returnx, requirements=ci.req_out, dtype=np.float64)
+            returny = np.require(returny, requirements=ci.req_out, dtype=np.float64)
+            returnwaves = np.require(returnwaves, requirements=ci.req_out, dtype=np.float64)
+            returncounts = np.require(returncounts, requirements=ci.req_out, dtype=np.uint)
+                       
+            func = ci.solve
+            log.info("Raytracing order %s...", m)
+            func(blaze_flag, return_mode, n, m, nxpix, nypix, f_col_1, f_col_2,
+                alpha_ech, blaze_ech, gamma_ech, sigma_ech, alpha_cd, sigma_cd,
+                f_cam, f_cam_1, dpix, xdl_0, xdm_0, xdr_0, ydl_0, ydm_0, ydr_0,
+                tau_dl, tau_dm, tau_dr, slit_x, slit_y, wl, returnx, returny,
+                returnwaves, returncounts)
+            print m, 'done', n
+            solvex[:, i] = returnx
+            solvey[:, i] = returny
+            interpx[:, i] = xmid
+            interpy[:, i] = ymid
+    
+        solvexoff = (np.max(solvex[10, :]) + np.min(solvex[10, :])) / 2.0
+        solveyoff = (np.max(solvey[10, :]) + np.min(solvey[10, :])) / 2.0
+        interpxoff = (np.max(interpx[10, :]) + np.min(interpx[10, :])) / 2.0
+        interpyoff = (np.max(interpy[10, :]) + np.min(interpy[10, :])) / 2.0
+        solvex -= solvexoff
+        solvey -= solveyoff
+        interpx -= interpxoff
+        interpy -= interpyoff
+        solvex /= self.dpix
+        solvey /= self.dpix
+        interpx /= self.dpix
+        interpy /= self.dpix
+        fig = plt.figure()
+        ax = fig.add_subplot(111, aspect='equal')
+        ax.scatter(solvex, solvey, c='r', marker='x', label='solve')
+        ax.scatter(interpx, interpy, c='b', marker='o', label='interp')
+        plt.legend()        
+        plt.show()        
+        
+        
         if write:
             # WRITE TO ETC OUTPUT FILE
             pass
