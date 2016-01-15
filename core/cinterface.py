@@ -115,7 +115,7 @@ def solve(*args):
         array_1d_double,     # waves
         array_1d_double,     # returnx
         array_1d_double,     # returny
-        array_1d_double,     # returnwaves		# 2d ?
-        array_1d_uint]       # returncounts		# 2d uint ?
+        array_2d_double,     # returnwaves		# 1d ?
+        array_2d_uint]       # returncounts		# 1d uint ?
     func.restype = None
     func(*args)
