@@ -289,6 +289,7 @@ void raytrace_solve_general(
   gsl_rng* r = gsl_rng_alloc(gsl_rng_taus); /* global rng generator */
   long seed = time(NULL);
   gsl_rng_set(r, seed);                     /* seed the rng */
+    
   
   for (i=0; i<n; ++i) {
     xi = xslit[i];       /* x coord */
@@ -365,8 +366,6 @@ void raytrace_solve_general(
       case 0:					// Now similar to case 1: Exact locations
    //     xd /= DPIX;
    //     yd /= DPIX;
-        returnx[i] = xd;
-        returny[i] = yd; 
 
     /* LEFT DETECTOR */
     xdp =  xd-XDL_0 + (xd-XDL_0)*cos(TAUDL) + (yd-YDL_0)*sin(TAUDL);
