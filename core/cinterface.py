@@ -34,11 +34,14 @@ array_2d_uint = np.ctypeslib.ndpointer(
     dtype=np.uint,
     ndim=2,
     flags='C_CONTIGUOUS')
-#
 array_1d_uint = np.ctypeslib.ndpointer(
     dtype=np.uint,
     ndim=1,
     flags='C_CONTIGUOUS')
+array_2d_float = np.ctypeslib.ndpointer(
+    dtype=np.float,
+    ndim=2,
+    flags='C_CONTIGUOUS')    
 # numpy array requirements
 req_in = "A C O".split()
 req_out = "A C O W".split()
@@ -73,7 +76,8 @@ def interp(*args):
         array_1d_double,     # waves
         array_1d_double,     # slit_x
         array_1d_double,     # slit_y
-        array_2d_uint]       # outarr
+        array_2d_uint,		 # outarr
+        array_2d_double]     # outwaves	
     func.restype = None
     func(*args)
 
@@ -111,7 +115,7 @@ def solve(*args):
         array_1d_double,     # waves
         array_1d_double,     # returnx
         array_1d_double,     # returny
-        array_1d_double,     # returnwaves		# 2d
-        array_1d_uint]       # returncounts		# 2d uint
+        array_2d_double,     # returnwaves		# 1d ?
+        array_2d_uint]       # returncounts		# 1d uint ?
     func.restype = None
     func(*args)
