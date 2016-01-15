@@ -196,7 +196,7 @@ class Instrument(object):
             self.find_ccd_limits_interp()
 
         elif self.model == "solve":
-            self.find_ccd_limits_falloff()
+            self.find_ccd_limits_solve()
 
 
     def interp_echang(self):
@@ -241,136 +241,32 @@ class Instrument(object):
             pass
         pass
 
-    def find_ccd_limits_falloff(self, write=False):
+    def find_ccd_limits_solve(self, write=False):
+        # TODO SHOULD THIS BE A WAVEFUNC METHOD ?
+        n = self.orders.size
+        det_wl_lim = np.empty([self.ndet*2, n])
 
-        import matplotlib.pyplot as plt
-        blaze_flag = int(self.blaze)
-        return_mode = 0   # return in mm		# was return mode 1
-
-        ndims = (21, self.orders.size)
- 
-        solvex = np.empty(ndims)
-        solvey = np.empty(ndims)
-        interpx = np.empty(ndims)
-        interpy = np.empty(ndims)
-        det_wl_lim = np.empty(ndims)
-
-        returnwaves_tmp = np.empty((self.det_dims[1]*self.det_dims[0], self.orders.size))
-        returncounts_tmp = np.empty((self.det_dims[1]*self.det_dims[0], self.orders.size))
-         
-        for i,m in enumerate(self.orders):
-            print i
+        # detector x positions in mm
+        # NOTE does not take detector tilt into account
+        x_det = np.array(
+            [self.xdl_le, self.xdl_re, self.xdm_le,
+            self.xdm_re, self.xdr_le, self.xdr_re])
+        log.debug("Detector edges = %s mm", x_det)
+        for i in xrange(n):
+            m = self.orders[i]
             fn = os.path.splitext(codevparsed_path % (self.band, self.echang, m))[0] + ".npy"
+            log.debug("Loading '%s'...", fn)
             _m, wl, xbot, xmid, xtop, yb, ymid, yt, slitheight, phi = np.load(fn).T
-            n = wl.size
-
-            print 'assigning parameters'
-            slit_x = np.zeros(n)
-            slit_y = np.zeros(n)
-            nxpix = self.det_dims[1]
-            nypix = self.det_dims[0]
-            dpix = self.dpix
-            f_col_1 = self.f_col_1
-            f_col_2 = self.f_col_2
-            alpha_ech = self.alpha_ech
-            blaze_ech = self.blaze_ech
-            gamma_ech = self.gamma_ech
-            sigma_ech = 1e6 / self.sigma_ech_inv
-            alpha_cd = self.alpha_cd
-            sigma_cd = 1e6 / self.sigma_cd_inv
-            f_cam = self.f_cam
-            f_cam_1 = self.f_cam_1
-            xdl_0 = self.xdl_0
-            xdm_0 = self.xdm_0
-            xdr_0 = self.xdr_0
-            ydl_0 = self.ydl_0
-            ydm_0 = self.ydm_0
-            ydr_0 = self.ydr_0
-            tau_dl = self.tau_dl
-            tau_dm = self.tau_dm
-            tau_dr = self.tau_dr
-
-            print 'creating return arrays'
-            returnx = np.empty(n)
-            returny = np.empty(n)
-            returnwaves = np.zeros((nxpix*nypix), dtype=np.float64) 
-            returncounts = np.zeros((nxpix*nypix), dtype=np.uint16)
-           
-            # require
-            slit_x = np.require(slit_x, requirements=ci.req_in, dtype=np.float64)
-            slit_y = np.require(slit_y, requirements=ci.req_in, dtype=np.float64)
-            wl = np.require(wl, requirements=ci.req_in, dtype=np.float64)
-            returnx = np.require(returnx, requirements=ci.req_out, dtype=np.float64)
-            returny = np.require(returny, requirements=ci.req_out, dtype=np.float64)
-            returnwaves = np.require(returnwaves, requirements=ci.req_out, dtype=np.float64)
-            returncounts = np.require(returncounts, requirements=ci.req_out, dtype=np.uint)
-                       
-            func = ci.solve
-            log.info("Raytracing order %s...", m)
-            func(blaze_flag, return_mode, n, m, nxpix, nypix, f_col_1, f_col_2,
-                alpha_ech, blaze_ech, gamma_ech, sigma_ech, alpha_cd, sigma_cd,
-                f_cam, f_cam_1, dpix, xdl_0, xdm_0, xdr_0, ydl_0, ydm_0, ydr_0,
-                tau_dl, tau_dm, tau_dr, slit_x, slit_y, wl, returnx, returny,
-                returnwaves, returncounts)
-            print m, 'done', n
-            solvex[:, i] = returnx
-            solvey[:, i] = returny
-            interpx[:, i] = xmid
-            interpy[:, i] = ymid
-
-            returnwaves_tmp[:,i] = returnwaves
-            returncounts_tmp[:,i] = returncounts
-            det_wl_lim[:, i] = returnx		
-
+            inds = np.argsort(wl)
+            wl = wl[inds]
+            xmid = xmid[inds]
+            fxmid = InterpolatedUnivariateSpline(xmid, wl)
+            wlpmid = fxmid(x_det)
+            det_wl_lim[:, i] = wlpmid
+            log.info("Wavelength limits for order %s found.", m)
         self.det_wl_lim = det_wl_lim
         self.wmin = self.det_wl_lim.min()
         self.wmax = self.det_wl_lim.max()
-        
-        # Adding counts from each order to pixels
-        counts_tmp = np.empty(np.size(returncounts))
-        for j in range(0, np.size(self.orders)):
-            counts_tmp += returncounts_tmp[:, j]
-			
-		# Reshaping array to fit same measurements as model=interp
-        counts_tmp = counts_tmp.reshape(2048, 6144)
-        
-        # Defining same output name as for model=interp
-        # (This could probably be done in a better way)
-        self.outarr=counts_tmp
-
-        # Normalising returnwaves by number of counts
-        returnwaves_norm = returnwaves_tmp/returncounts_tmp
-        indnan=np.where(np.isnan(returnwaves_norm))
-        returnwaves_norm[indnan]=0
-        returnwaves_out=returnwaves_norm[np.array(np.arange(0, np.size(returnwaves))),
-         np.array(0)]			# First order in band
-        for o in range(1, np.size(self.orders)):															# Starting from second order in band
-            # Adding new wavelengths to pixels
-            returnwaves_out += returnwaves_norm[np.array(np.arange(0, np.size(returnwaves))),
-             np.array(o)]
-			# Some orders overlap with wavelengths, thus adding them together
-            ind_tmp = np.where(returnwaves_out > np.max(returnwaves_norm))
-            returnwaves_out[ind_tmp] /= 2.0		 # Take mean of added wavelengths
-    
-        solvexoff = (np.max(solvex[10, :]) + np.min(solvex[10, :])) / 2.0
-        solveyoff = (np.max(solvey[10, :]) + np.min(solvey[10, :])) / 2.0
-        interpxoff = (np.max(interpx[10, :]) + np.min(interpx[10, :])) / 2.0
-        interpyoff = (np.max(interpy[10, :]) + np.min(interpy[10, :])) / 2.0
-        solvex -= solvexoff
-        solvey -= solveyoff
-        interpx -= interpxoff
-        interpy -= interpyoff
-        solvex /= self.dpix
-        solvey /= self.dpix
-        interpx /= self.dpix
-        interpy /= self.dpix
-        fig = plt.figure()
-        ax = fig.add_subplot(111, aspect='equal')
-        ax.scatter(solvex, solvey, c='r', marker='x', label='solve')
-        ax.scatter(interpx, interpy, c='b', marker='o', label='interp')
-        plt.legend()        
-        plt.show()
-        
         if write:
             # WRITE TO ETC OUTPUT FILE
             pass
