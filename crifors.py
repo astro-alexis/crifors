@@ -208,8 +208,17 @@ def main():
         gs = gridspec.GridSpec(2, 1)
         ax1 = plt.subplot(gs[0])
         ax2 = plt.subplot(gs[1])
-        ax1.imshow(simulator.outarr, origin="lower", interpolation='nearest', cmap="hot")
-        ax1.set_title("CRIRES+ %s-band, echang=%s" % (simulator.band, simulator.echang))
+        if (simulator.wavemap==True):
+            im= ax1.imshow(simulator.outwaves, origin="lower", interpolation='nearest', cmap="hot",
+            vmin=simulator.det_wl_lim.min(), vmax=simulator.det_wl_lim.max())     
+            from mpl_toolkits.axes_grid1 import make_axes_locatable		# Tool to get axes to colorbar
+            divider=make_axes_locatable(ax1)
+            cax=divider.append_axes("right", size="5%", pad=0.05)		# Places colorbar next to image with 'nice' size 
+            plt.colorbar(im, ax=ax1, cax=cax) # orientation='horizontal' (remove cax if horizontal bar is desired)
+            ax1.set_title("CRIRES+ %s-band, echang=%s, Wavemap" % (simulator.band, simulator.echang))
+        else:
+            ax1.imshow(simulator.outarr, origin="lower", interpolation='nearest', cmap="hot")
+            ax1.set_title("CRIRES+ %s-band, echang=%s" % (simulator.band, simulator.echang)) 
         ax2.plot(simulator.source_spectrum[0], simulator.source_spectrum[1])
         ax2.set_color_cycle(['yellow', 'gold','goldenrod','orange', 'darkorange', 'OrangeRed',
          'red', 'crimson', 'maroon', 'black',])
