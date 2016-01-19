@@ -211,15 +211,14 @@ def main():
         ax1.imshow(simulator.outarr, origin="lower", interpolation='nearest', cmap="hot")
         ax1.set_title("CRIRES+ %s-band, echang=%s" % (simulator.band, simulator.echang))
         ax2.plot(simulator.source_spectrum[0], simulator.source_spectrum[1])
-        ax2.set_color_cycle(['black', 'maroon', 'crimson', 'red', 'OrangeRed', 'darkorange',
-         'orange', 'goldenrod', 'gold', 'yellow'])
+        ax2.set_color_cycle(['yellow', 'gold','goldenrod','orange', 'darkorange', 'OrangeRed',
+         'red', 'crimson', 'maroon', 'black',])
         for mwaves,mpdf in simulator.mwaves_mpdfs:
             ax2.plot(mwaves,mpdf)
         ax2.set_xlabel("Wavelength (nm)")
         ax2.set_ylabel("PDF")
-        ax2.set_title("PHOENIX model, Teff=3000K, log(g)=5.0, [M/H]=0.0")
+        #ax2.set_title("PHOENIX model, Teff=3000K, log(g)=5.0, [M/H]=0.0")
         plt.tight_layout()
-      #  plt.savefig('../Images/Crifors_simulation_band_%s_echang_%s.png' % (simulator.band, simulator.echang))
         plt.show()
         
     else:
