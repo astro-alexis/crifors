@@ -187,10 +187,7 @@ def write_to_fits(sim, gzip=True):
 
     # create PrimaryHDU object to encapsulate data
     log.info("Creating HDU...")
-    if (sim.wavemap==True):
-		hdu = fits.PrimaryHDU(np.asarray(sim.outwaves, dtype=np.float64))		
-    else:
-		hdu = fits.PrimaryHDU(np.asarray(sim.outarr, dtype=np.uint16))
+    hdu = fits.PrimaryHDU(np.asarray(sim.outarr, dtype=np.uint16))
 
     # create ImageHDU objects for detector images
     hdu_dl = fits.ImageHDU(np.asarray(sim.outarr[:, :sim.nxpix],dtype=np.uint16))
