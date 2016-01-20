@@ -10,7 +10,7 @@ Usage:
                [--model=MODEL] [--nrays=NRAYS] [--nruns=NRUNS] [--outfn=OUTFN]
                [--plot | --plot-psf | plot-simple] [--psf=PSF] [--rv=RV]
                [--seeing=SEEING] [--slit-width=SLIT] [--verbose=LEVEL]
-               [--spread] [--polarimeter]
+               [--spread] [--polarimeter] [--wavemap]
     crifors.py [-h] | [--help] | [--version]
 
 Arguments:
@@ -208,18 +208,26 @@ def main():
         gs = gridspec.GridSpec(2, 1)
         ax1 = plt.subplot(gs[0])
         ax2 = plt.subplot(gs[1])
-        ax1.imshow(simulator.outarr, origin="lower", interpolation='nearest', cmap="hot")
-        ax1.set_title("CRIRES+ %s-band, echang=%s" % (simulator.band, simulator.echang))
+        if (simulator.wavemap==True):
+            im= ax1.imshow(simulator.outwaves, origin="lower", interpolation='nearest', cmap="hot",
+            vmin=simulator.det_wl_lim.min(), vmax=simulator.det_wl_lim.max())     
+            from mpl_toolkits.axes_grid1 import make_axes_locatable		# Tool to get axes to colorbar
+            divider=make_axes_locatable(ax1)
+            cax=divider.append_axes("right", size="5%", pad=0.05)		# Places colorbar next to image with 'nice' size 
+            plt.colorbar(im, ax=ax1, cax=cax) # orientation='horizontal' (remove cax if horizontal bar is desired)
+            ax1.set_title("CRIRES+ %s-band, echang=%s, Wavemap" % (simulator.band, simulator.echang))
+        else:
+            ax1.imshow(simulator.outarr, origin="lower", interpolation='nearest', cmap="hot")
+            ax1.set_title("CRIRES+ %s-band, echang=%s" % (simulator.band, simulator.echang)) 
         ax2.plot(simulator.source_spectrum[0], simulator.source_spectrum[1])
-        ax2.set_color_cycle(['black', 'maroon', 'crimson', 'red', 'OrangeRed', 'darkorange',
-         'orange', 'goldenrod', 'gold', 'yellow'])
+        ax2.set_color_cycle(['yellow', 'gold','goldenrod','orange', 'darkorange', 'OrangeRed',
+         'red', 'crimson', 'maroon', 'black',])
         for mwaves,mpdf in simulator.mwaves_mpdfs:
             ax2.plot(mwaves,mpdf)
         ax2.set_xlabel("Wavelength (nm)")
         ax2.set_ylabel("PDF")
-        ax2.set_title("PHOENIX model, Teff=3000K, log(g)=5.0, [M/H]=0.0")
+        #ax2.set_title("PHOENIX model, Teff=3000K, log(g)=5.0, [M/H]=0.0")
         plt.tight_layout()
-      #  plt.savefig('../Images/Crifors_simulation_band_%s_echang_%s.png' % (simulator.band, simulator.echang))
         plt.show()
         
     else:

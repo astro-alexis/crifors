@@ -54,8 +54,8 @@ _cl = {
     "telluric" : "--telluric",
     "spread" : "--spread",
     "polarimeter" : "--polarimeter",
+    "wavemap" : "--wavemap",
     }
-
 
 log = logging.getLogger(__name__)
 
@@ -312,7 +312,7 @@ class Instrument(object):
 
             returnx = np.empty(n)
             returny = np.empty(n)
-            returnwaves = np.empty(ndims)
+            returnwaves = np.empty(ndims) 
             returncounts = np.empty(ndims)
             #returnwaves = np.empty(nxpix*nypix)
             #returncounts = np.empty(nxpix*nypix, dtype=np.uint16)
@@ -334,7 +334,6 @@ class Instrument(object):
                 tau_dl, tau_dm, tau_dr, slit_x, slit_y, wl, returnx, returny,
                 returnwaves, returncounts)
 
-            print m, 'done', n
             solvex[:, i] = returnx
             solvey[:, i] = returny
             interpx[:, i] = xmid
