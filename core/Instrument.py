@@ -53,8 +53,8 @@ _cl = {
     "telluric" : "--telluric",
     "spread" : "--spread",
     "polarimeter" : "--polarimeter",
+    "wavemap" : "--wavemap",
     }
-
 
 log = logging.getLogger(__name__)
 
@@ -268,7 +268,6 @@ class Instrument(object):
         self.wmin = self.det_wl_lim.min()
         self.wmax = self.det_wl_lim.max()
         
-###
         import matplotlib.pyplot as plt
         blaze_flag = int(self.blaze)
         return_mode = 1   # return in mm		# was return mode 1
@@ -356,9 +355,8 @@ class Instrument(object):
         ax = fig.add_subplot(111, aspect='equal')
         ax.scatter(solvex, solvey, c='r', marker='x', label='solve')
         ax.scatter(interpx, interpy, c='b', marker='o', label='interp')
-        plt.legend()        
-        plt.show()        
-        
+        plt.legend()
+        plt.show()
         
         if write:
             # WRITE TO ETC OUTPUT FILE
