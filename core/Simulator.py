@@ -134,8 +134,8 @@ class Simulator(object):
             pdf_ratio = scipy.integrate.simps(mpdf, mwaves) / pdf_tot
             mnrays = int(pdf_ratio * self.nrays)
             # just in case we are given 0 rays to simulate
-          #  while mnrays <= 0:
-          #      mnrays = np.random.poisson(mnrays)
+          #  while mnrays <= 0:							# This makes no sense. 
+          #      mnrays = np.random.poisson(mnrays)		# np.random.poisson(0)=0.
             waves_in = wf.sample_cdf(mwaves, mpdf, mnrays)
             self.nrays_per_order.append(mnrays)
 
@@ -179,11 +179,6 @@ class Simulator(object):
                 return self.phx_model()
             elif self.source[0].lower() in "f flatfield".split():
                 return self.flatfield()
-            elif self.source[0].lower() in "w wavemap".split():
-				#return self.wavemap()
-				self.wavemap=True
-				return self.phx_model()
-				
             else:
                 return self.import_one_file()
         elif len(self.source) == 0:
@@ -589,7 +584,7 @@ class Simulator(object):
             plt.show()
         return wavelengths, flux
 
-    def wavemap(self):
+    def wavemap(self):				# Is this used for anything?
         desc = "2D wavelength mapping"
         arm.fiber_description = 'wavelength mapping'
         arm.wavelengths = wf.calculate_wavelengths(arm, mode='CCD', nwaves=arm.nw)
