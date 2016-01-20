@@ -12,6 +12,7 @@ import sys
 from defaults import *
 from parsecodev import get_codev_files
 import cinterface as ci
+import matplotlib.pyplot as plt
 
 # config file helpers
 _bands = {
@@ -142,7 +143,7 @@ class Instrument(object):
         # ADDITIONAL PARAMETERS AND CONVENIENCE CALCULATIONS
         if self.telluric:
             self.telluric = tell_species
-            
+
         self.slit_ratio = self.slit_height / self.slit_width
         self.sig_x_psf = self.seeing / (2. * np.sqrt(2. * np.e))
         self.sig_y_psf = self.seeing / (2. * np.sqrt(2. * np.e))
@@ -241,7 +242,8 @@ class Instrument(object):
             pass
         pass
 
-    def find_ccd_limits_solve(self, write=False):
+
+    def find_ccd_limits_solve(self, write=False, plot=False):
         # TODO SHOULD THIS BE A WAVEFUNC METHOD ?
         n = self.orders.size
         det_wl_lim = np.empty([self.ndet*2, n])
@@ -267,25 +269,22 @@ class Instrument(object):
         self.det_wl_lim = det_wl_lim
         self.wmin = self.det_wl_lim.min()
         self.wmax = self.det_wl_lim.max()
-        
-        import matplotlib.pyplot as plt
+
         blaze_flag = int(self.blaze)
         return_mode = 1   # return in mm		# was return mode 1
 
         ndims = (21, self.orders.size)
- 
+
         solvex = np.empty(ndims)
         solvey = np.empty(ndims)
         interpx = np.empty(ndims)
         interpy = np.empty(ndims)
-         
+
         for i,m in enumerate(self.orders):
-            print i
             fn = os.path.splitext(codevparsed_path % (self.band, self.echang, m))[0] + ".npy"
             _m, wl, xbot, xmid, xtop, yb, ymid, yt, slitheight, phi = np.load(fn).T
             n = wl.size
 
-            print 'assigning parameters'
             slit_x = np.zeros(n)
             slit_y = np.zeros(n)
             nxpix = self.det_dims[1]
@@ -311,12 +310,13 @@ class Instrument(object):
             tau_dm = self.tau_dm
             tau_dr = self.tau_dr
 
-            print 'creating return arrays'
             returnx = np.empty(n)
             returny = np.empty(n)
             returnwaves = np.empty(ndims) 
             returncounts = np.empty(ndims)
-           
+            #returnwaves = np.empty(nxpix*nypix)
+            #returncounts = np.empty(nxpix*nypix, dtype=np.uint16)
+
             # require
             slit_x = np.require(slit_x, requirements=ci.req_in, dtype=np.float64)
             slit_y = np.require(slit_y, requirements=ci.req_in, dtype=np.float64)
@@ -325,7 +325,7 @@ class Instrument(object):
             returny = np.require(returny, requirements=ci.req_out, dtype=np.float64)
             returnwaves = np.require(returnwaves, requirements=ci.req_out, dtype=np.float64)
             returncounts = np.require(returncounts, requirements=ci.req_out, dtype=np.uint)
-                       
+
             func = ci.solve
             log.info("Raytracing order %s...", m)
             func(blaze_flag, return_mode, n, m, nxpix, nypix, f_col_1, f_col_2,
@@ -333,12 +333,12 @@ class Instrument(object):
                 f_cam, f_cam_1, dpix, xdl_0, xdm_0, xdr_0, ydl_0, ydm_0, ydr_0,
                 tau_dl, tau_dm, tau_dr, slit_x, slit_y, wl, returnx, returny,
                 returnwaves, returncounts)
-            print m, 'done', n
+
             solvex[:, i] = returnx
             solvey[:, i] = returny
             interpx[:, i] = xmid
             interpy[:, i] = ymid
-    
+
         solvexoff = (np.max(solvex[10, :]) + np.min(solvex[10, :])) / 2.0
         solveyoff = (np.max(solvey[10, :]) + np.min(solvey[10, :])) / 2.0
         interpxoff = (np.max(interpx[10, :]) + np.min(interpx[10, :])) / 2.0
@@ -351,15 +351,11 @@ class Instrument(object):
         solvey /= self.dpix
         interpx /= self.dpix
         interpy /= self.dpix
-        fig = plt.figure()
-        ax = fig.add_subplot(111, aspect='equal')
-        ax.scatter(solvex, solvey, c='r', marker='x', label='solve')
-        ax.scatter(interpx, interpy, c='b', marker='o', label='interp')
-        plt.legend()
-        plt.show()
-        
-        if write:
-            # WRITE TO ETC OUTPUT FILE
-            pass
-        pass
-      #  exit()
+
+        if plot:
+            fig = plt.figure()
+            ax = fig.add_subplot(111, aspect='equal')
+            ax.scatter(solvex, solvey, c='r', marker='x', label='solve')
+            ax.scatter(interpx, interpy, c='b', marker='o', label='interp')
+            plt.legend()
+            plt.show()
