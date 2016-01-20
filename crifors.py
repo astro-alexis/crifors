@@ -10,7 +10,7 @@ Usage:
                [--model=MODEL] [--nrays=NRAYS] [--nruns=NRUNS] [--outfn=OUTFN]
                [--plot | --plot-psf | plot-simple] [--psf=PSF] [--rv=RV]
                [--seeing=SEEING] [--slit-width=SLIT] [--verbose=LEVEL]
-               [--spread] [--polarimeter]
+               [--spread] [--polarimeter] [--wavemap]
     crifors.py [-h] | [--help] | [--version]
 
 Arguments:
