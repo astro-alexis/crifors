@@ -157,14 +157,19 @@ class Simulator(object):
         self.sim_time = time.time() - t0
         inds = np.where(self.outarr != 0)
         
-        # Normalising wavelengths for wavemap
-        self.outwaves[inds] /= self.outarr[inds]
-
         self.mean_rays_per_pixel = np.mean(self.outarr[inds])
         self.med_rays_per_pixel = np.median(self.outarr[inds])
         self.min_rays_per_pixel = np.min(self.outarr[inds])
         self.max_rays_per_pixel = np.max(self.outarr[inds])
         self.nrays_tot = np.sum(self.outarr[inds])
+
+        # Normalising wavelengths for wavemap
+        self.outwaves[inds] /= self.outarr[inds]
+        
+        # Overwriting outarray with wavelengths for wavemap
+        if (self.wavemap==True):
+            self.outarr = self.outwaves       
+        
         	        
     # =========================[ initfuncs ]===================================
 
