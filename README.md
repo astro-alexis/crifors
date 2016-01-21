@@ -200,6 +200,11 @@ The flag can be entered as follows:
 
 	python crifors.py Y </path/to/spectrum.fits> --telluric
 
+## polarimeter
+Option to add a polarimeter shift to ray coordinates, duplicating each ray with beam splitter separation:
+
+	python crifors.py Y </path/to/spectrum.fits> --polarimeter
+
 ## blaze function
 The blaze function is calculated and implemented to the spectrum using the `--blaze`option:
 
@@ -216,7 +221,7 @@ The output spectrum can be shown as wavelengths for each pixel instead of counts
 # TODO
  * physical model ~~w/ blaze function~~
    it seems that the problem here lies with inconsistent instrument parameters
- * polarimeter mode
+ * ~~polarimeter mode~~
  * background light file
  * ~~slit decker mask~~
  * ~~config file input~~
