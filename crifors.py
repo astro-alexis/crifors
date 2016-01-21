@@ -38,6 +38,7 @@ Simulation options:
     --slit-width=SLIT  width of slit in arcseconds [Default: 0.2]
     --spread           spread out each ray by convolving with a kernel
     --polarimeter      duplicate each ray with beam splitter separation
+    --wavemap          produce a wavelength map
 
 Other options:
     --config=CONFIG    simulation config file
@@ -60,8 +61,6 @@ SOURCE...
         This is the default SOURCE argument.
     (f, flatfield) : ideal flatfield spectrum. Assumes a flat, uniform
         distribution (no lamp emission as of yet).
-    (w, wavemap) : wavemap. Instead of count values as pixels, the wavelength
-        value is given.  NOTE not currently supported.
     (<path/to/spectrum.fits/txt>) : path and filename of an input spectrum.
         It assumes a 2 column fits or txt file, with wavelengths units in [nm]
         in the 1st column and flux in the 2nd column.  The filetype can be
@@ -79,7 +78,7 @@ Option details:
     This flag turns on noise in the simulation. By default, shot noise is
     inherent in the raytracing process, but this option is needed to include
     dark current and readout noise.
--t, --tell
+-t, --telluric
     This flag adds telluric lines to the input spectrum.  Lines are calculated
     using LBLRTM code (see Husser & Ulbrich, 2014).
 -m, --model=MODEL
@@ -113,9 +112,11 @@ Option details:
     Output filename or path.
 --plot
     Opens an interactive plot of the simulated image and input spectrum
-    before finishing.
+    before finishing (N.B. does not automatically write ouput spectrum to fits-file).
 --plot-psf
     Opens an interactive plot of the slit psf function and exits.
+--polarimeter
+    Adds polarimeter shift to ray coordinates. 
 --psf=PSF
     Point spread function of source. Currently only 'gaussian' is supported.
     (point, uniform, gaussian)
@@ -126,10 +127,10 @@ Option details:
 --slit-width=SLIT
     Width of slit in arcseconds (0.2, 0.4)
 --spread
-    tbw
---polarimeter
-    tbw
-
+    Convolves map of rays with a 2D kernel, boosting signal to noise in order to speed up computation.
+--wavemap
+    Gives output spectrum in wavelength value for each pixel instead of count values.
+     
 Examples:
 >> python crifors.py J --telluric --noise --nrays=1e9
     This will simulate a J band image using the included PHOENIX spectrum.
