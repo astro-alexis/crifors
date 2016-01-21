@@ -92,13 +92,6 @@ is fed into the spectrograph.  It assumes a continuous, uniform distribution.
 
 	python crifors.py Y F
 
-## wavemap
-Not implemented yet.
-
-With the wavemap source, `w`, `W` or `wavemap`, pixel values will be wavelengths
-instead of counts.
-
-
 
 # command line options
 
@@ -207,9 +200,21 @@ The flag can be entered as follows:
 
 	python crifors.py Y </path/to/spectrum.fits> --telluric
 
+## blaze function
+The blaze function is calculated and implemented to the spectrum using the `--blaze`option:
+
+	python crifors.py Y </path/to/spectrum.fits> --blaze
+
+
+## wavemap
+The output spectrum can be shown as wavelengths for each pixel instead of counts using the  `--wavemap` option:
+
+	python crifors.py Y </path/to/spectrum.fits> --wavemap
+
+
 ------------------------------
 # TODO
- * physical model w/ blaze function
+ * physical model ~~w/ blaze function~~
    it seems that the problem here lies with inconsistent instrument parameters
  * polarimeter mode
  * background light file
