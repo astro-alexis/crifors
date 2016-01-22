@@ -98,6 +98,7 @@ def solve(*args):
         ct.c_double,            # sigma_ech
         ct.c_double,            # alpha_cd
         ct.c_double,            # sigma_cd
+        ct.c_double,			# gamma_cd
         ct.c_double,            # f_cam
         ct.c_double,            # f_cam_1
         ct.c_double,            # dpix
