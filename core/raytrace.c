@@ -212,6 +212,7 @@ void raytrace_solve_general(
     double SIGMA_E,
     double ALPHA_G,
     double SIGMA_G,
+    double GAMMA_G,
     double F_CAM,
     double F_CAM_1,
     double DPIX,
@@ -236,15 +237,18 @@ void raytrace_solve_general(
   ALPHA_E = cradians(ALPHA_E);
   GAMMA_E = cradians(GAMMA_E);
   ALPHA_G = cradians(ALPHA_G);
+  GAMMA_G = cradians(GAMMA_G);
   const double ORDER = (double)m;
   const double F_COL2 = F_COL * F_COL;
-  const double MU_E0 = ALPHA_E - M_PI - cradians(-3.55);
+  const double MU_E0 = ALPHA_E - M_PI - cradians(-3.55/2.0);
   const double NU_E0 = GAMMA_E;
-  const double MU_E1 = ALPHA_E + M_PI + cradians(-3.55);
+  const double MU_E1 = ALPHA_E + M_PI + cradians(-3.55/2.0);
   const double NU_E1 = -GAMMA_E;
-  const double NU_G0 = cradians(0.0);//ALPHA_G;
+  const double NU_G0 = cradians(0); //ALPHA_G;
   const double NU_G1 = ALPHA_G + M_PI;
   const double NU_G2 = ALPHA_G + M_PI;
+  const double MU_G0 = GAMMA_G;
+  const double MU_G1 = -GAMMA_G;
   const double COS_MU_E0 = cos(MU_E0);
   const double SIN_MU_E0 = sin(MU_E0);
   const double COS_MU_E1 = cos(MU_E1);
@@ -255,6 +259,10 @@ void raytrace_solve_general(
   const double SIN_NU_E1 = sin(NU_E1);
   const double COS_NU_G0 = cos(NU_G0);
   const double SIN_NU_G0 = sin(NU_G0);
+  const double COS_MU_G0 = cos(MU_G0);
+  const double SIN_MU_G0 = sin(MU_G0);
+  const double COS_MU_G1 = cos(MU_G1);
+  const double SIN_MU_G1 = sin(MU_G1); 
   const double COS_NU_G1 = cos(NU_G1);
   const double SIN_NU_G1 = sin(NU_G1);
   const double COS_NU_G2 = cos(NU_G2);
@@ -307,26 +315,59 @@ void raytrace_solve_general(
 
     /* :::::::::::::::::::: GRATING :::::::::::::::::::::::::::::::::*/
     /* INTO PLANE RF */
-    //xt = x0;
+    //xt = x0 ;
     //yt = y0 * COS_NU_G0 - z0 * SIN_NU_G0;
     //zt = y0 * SIN_NU_G0 + z0 * COS_NU_G0;
     /* PLANE RELATION */
     //x = xt / n_g;
     //y = yt / n_g;
+    //x0 = xt;
+    //y0 = yt;
     /* NORMALIZATION AFTER PLANE RELATION (REFRACTION) */
-    //z = (zt / fabs(zt)) * sqrt(1.0 - x*x - y*y);
+    //z0 = zt;
+    //z0 = (zt / fabs(zt)) * sqrt(1.0 - xt*xt - yt*yt);
 
+/*
+	xt = x0;
+	yt = (COS_NU_G1 * y0) - (SIN_NU_G1 * z0);
+	zt = (SIN_NU_G1 * y0) + (COS_NU_G1 * z0);
+	
+	x = (COS_MU_G0 * xt) - (SIN_MU_G0 * zt);
+	y = yt;
+	z = (SIN_MU_G0 * xt) + (COS_MU_G0 * zt);
+	
+	xt = x;
+	yt = y - (li/SIGMA_E);
+	zt = z;
+	
+	zt = (zt / fabs(zt)) * sqrt(1.0 - xt*xt - yt*yt);
+
+	x = (COS_MU_G1 * xt) - (SIN_MU_G1 * zt);
+	y = yt;
+	z = (SIN_MU_G1 * xt) + (COS_MU_G1 * zt);	
+
+	xt = x;
+	yt = (COS_NU_G2 * y) - (SIN_NU_G2 * z);
+	zt = (SIN_NU_G2 * y) + (COS_NU_G2 * z);
+	
+	x = xt;
+	y = yt;
+	z = zt;
+*/	
+	
     /* INTO GRISM RF and GRISM RELATION */
+    
     xt = x0;
     yt = (-li / SIGMA_G) + (COS_NU_G1 * y0) - (SIN_NU_G1 * z0);
     zt = (SIN_NU_G1 * y0) + (COS_NU_G1 * z0);
-    /* NORMALIZATION AFTER GRATING RELATION */
+    // NORMALIZATION AFTER GRATING RELATION 
     zt = (zt / fabs(zt)) * sqrt(1.0 - xt*xt - yt*yt);
 
-    /* OUT OF GRISM RF */
+    // OUT OF GRISM RF 
     x = xt;
     y = (COS_NU_G2 * yt) - (SIN_NU_G2 * zt);
     z = (SIN_NU_G2 * yt) + (COS_NU_G2 * zt);
+    
     /* ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::*/
 
     /* CAM-COLL */
@@ -338,22 +379,45 @@ void raytrace_solve_general(
 
     /* :::::::::::::::::::: ECHELLE :::::::::::::::::::::::::::::::::::::*/
     /* INTO ECHELLE RF */
-    xt = (ORDER * li / SIGMA_E) - (COS_MU_E0 * x) + (SIN_MU_E0*SIN_NU_E0 * y) + (SIN_MU_E0*COS_NU_E0 * z);
-    yt = -(COS_NU_E0 * y) + (SIN_NU_E0 * z);
-    zt = -(SIN_MU_E0 * x) - (COS_MU_E0*SIN_NU_E0 * y) - (COS_MU_E0*COS_NU_E0 * z);
+//    xt = (ORDER * li / SIGMA_E) - (COS_MU_E0 * x) + (SIN_MU_E0*SIN_NU_E0 * y) + (SIN_MU_E0*COS_NU_E0 * z);
+//   yt = -(COS_NU_E0 * y) + (SIN_NU_E0 * z);
+//    zt = -(SIN_MU_E0 * x) - (COS_MU_E0*SIN_NU_E0 * y) - (COS_MU_E0*COS_NU_E0 * z);
     /* NORMALIZATION AFTER ECHELLE RELATION */
-    zt = (zt / fabs(zt)) * sqrt(1.0 - yt*yt - xt*xt);
+//    zt = (zt / fabs(zt)) * sqrt(1.0 - yt*yt - xt*xt);
 
     /* OUT OF ECHELLE RF */
-    x = (COS_MU_E1 * xt) - (SIN_MU_E1 * zt);
-    y = -(SIN_MU_E1*SIN_NU_E1) * xt + (COS_NU_E1 * yt - COS_MU_E1*SIN_NU_E1 * zt);
-    z = (SIN_MU_E1*COS_NU_E1) * xt + (SIN_NU_E1 * yt + COS_MU_E1*COS_NU_E1 * zt);
+//    x = (COS_MU_E1 * xt) - (SIN_MU_E1 * zt);
+//    y = -(SIN_MU_E1*SIN_NU_E1) * xt + (COS_NU_E1 * yt - COS_MU_E1*SIN_NU_E1 * zt);
+//    z = (SIN_MU_E1*COS_NU_E1) * xt + (SIN_NU_E1 * yt + COS_MU_E1*COS_NU_E1 * zt);
 
-    /* BLAZE FUNCTION*/
-    if (BLAZE_FLAG == 1) {
-      beta = M_PI * cos(ALPHA_E) * SIGMA_E * (x0 + x) / li;
-      blaze_eff = (sin(beta)*sin(beta)) / (beta*beta);
-    }
+
+	xt = x;
+	yt = (COS_NU_E0 * y) - (SIN_NU_E0 * z);
+	zt = (SIN_NU_E0 * z) + (COS_NU_E0 * z);
+	
+	x = (COS_MU_E0 * xt) - (SIN_MU_E0 * z);
+	y = yt;
+	z = (SIN_MU_E0 * xt) + (COS_MU_E0 *z);
+	
+	xt = -x + (ORDER * li / SIGMA_E);
+	yt = -y;
+	zt = -z;
+	
+	zt = (zt / fabs(zt)) * sqrt(1.0 - yt*yt - xt*xt);
+	
+	x = (COS_MU_E1 * xt) - (SIN_MU_E1 * zt);
+	y = yt;
+	z = (SIN_MU_E1 * xt) + (COS_MU_E1 * zt);
+	
+	xt = x;
+	yt = (COS_NU_E1 * y) - (SIN_NU_E1 * z);
+	zt = (SIN_NU_E1 * y) + (COS_NU_E1 * z);
+	
+	x = xt;
+	y = yt;
+	z = zt;
+	
+
     /* ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::*/
 
     /* PROJECTION ONTO DETECTOR */
