@@ -144,7 +144,7 @@ class Simulator(object):
 
             # polarimeter
             if self.polarimeter:
-                log.info("Adding polarimter shift to ray coordinates")
+                log.info("Adding polarimeter shift to ray coordinates")
                 slit_x, slit_y = self.polarimeter_shift(m, waves_in, slit_x, slit_y)
 
             # normalize to unity
@@ -156,19 +156,21 @@ class Simulator(object):
             self.modelfunc(m, waves_in, slit_x, slit_y)
         self.sim_time = time.time() - t0
         inds = np.where(self.outarr != 0)
-        
-        self.mean_rays_per_pixel = np.mean(self.outarr[inds])
-        self.med_rays_per_pixel = np.median(self.outarr[inds])
-        self.min_rays_per_pixel = np.min(self.outarr[inds])
-        self.max_rays_per_pixel = np.max(self.outarr[inds])
-        self.nrays_tot = np.sum(self.outarr[inds])
 
-        # Normalising wavelengths for wavemap
-        self.outwaves[inds] /= self.outarr[inds]
+   #     self.mean_rays_per_pixel = np.mean(self.outarr[inds])
+   #     self.med_rays_per_pixel = np.median(self.outarr[inds])
+   #     self.min_rays_per_pixel = np.min(self.outarr[inds])
+   #     self.max_rays_per_pixel = np.max(self.outarr[inds])
+   #     self.nrays_tot = np.sum(self.outarr[inds])
+
+        #self.outwaves[inds] /= self.outarr[inds]
         
-        # Overwriting outarray with wavelengths for wavemap
+        # Because we get errors from inds if no rays hit the detectors.
+        # For wavemap, overwrite outarray with wavelengths
         if (self.wavemap==True):
-            self.outarr = self.outwaves       
+            self.outwaves /= self.outarr				# Normalise wavelengths
+            self.outwaves[np.isnan(self.outwaves)]=0	# Remove eventual NaNs
+            self.outarr = self.outwaves
         
         	        
     # =========================[ initfuncs ]===================================
@@ -402,6 +404,7 @@ class Simulator(object):
         sigma_ech = 1e6 / self.sigma_ech_inv
         alpha_cd = self.alpha_cd
         sigma_cd = 1e6 / self.sigma_cd_inv
+        gamma_cd = self.gamma_cd
         f_cam = self.f_cam
         f_cam_1 = self.f_cam_1
         returnx = np.empty(1)
@@ -418,7 +421,6 @@ class Simulator(object):
         tau_dm = self.tau_dm
         tau_dr = self.tau_dr
         func = ci.raytrace.raytrace_solve_general
-        #
         func.argtypes = [
             ct.c_int,               # blaze_flag
             ct.c_int,               # return_mode
@@ -434,6 +436,7 @@ class Simulator(object):
             ct.c_double,            # sigma_ech
             ct.c_double,            # alpha_cd
             ct.c_double,            # sigma_cd
+            ct.c_double,            # gamma_cd
             ct.c_double,            # f_cam
             ct.c_double,            # f_cam_1
             ct.c_double,            # dpix
@@ -451,15 +454,15 @@ class Simulator(object):
             ci.array_1d_double,     # waves
             ci.array_1d_double,     # returnx
             ci.array_1d_double,     # returny
-            ci.array_2d_double,     # returnwaves		# 1d ?
-            ci.array_2d_uint]       # returncounts		# 1d uint ? 
+            ci.array_2d_double,     # returnwaves
+            ci.array_2d_uint]       # returncounts
         func.restype = None        
         log.info("Raytracing order %s...", m)
         func(blaze_flag, return_mode, n, m, nxpix, nypix, f_col_1, f_col_2,
             alpha_ech, blaze_ech, gamma_ech, sigma_ech, alpha_cd, sigma_cd,
-            f_cam, f_cam_1, dpix, xdl_0, xdm_0, xdr_0, ydl_0, ydm_0, ydr_0,
-            tau_dl, tau_dm, tau_dr, slit_x, slit_y, waves, returnx, returny,
-            self.outwaves, self.outarr)	# returnwaves/counts
+            gamma_cd, f_cam, f_cam_1, dpix, xdl_0, xdm_0, xdr_0, ydl_0, 
+            ydm_0, ydr_0, tau_dl, tau_dm, tau_dr, slit_x, slit_y, waves,
+            returnx, returny, self.outwaves, self.outarr)
 
 
     # ======================[ spectrum methods ]===============================
@@ -589,22 +592,8 @@ class Simulator(object):
             plt.show()
         return wavelengths, flux
 
-    def wavemap(self):				# Is this used for anything?
-        desc = "2D wavelength mapping"
-        arm.fiber_description = 'wavelength mapping'
-        arm.wavelengths = wf.calculate_wavelengths(arm, mode='CCD', nwaves=arm.nw)
-        arm.intensities = arm.wavelengths
-        arm.wavemap = True
-        arm.fib_obstype[i] = 'WAVE'
-        arm.fib_src[i] = 'WAVE'
-        return wavelengths, wavelengths
-
     def wavetrace():
         desc = "1D wavelength tracing"
-
-    def solve2(inst, settings):		# What is this? It interrupts when calling --model=solve
-        log.info("Solving.")
-        sys.exit(0)
 
     def spreadout(self, kernel=None):
         if not kernel:
