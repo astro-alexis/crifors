@@ -297,7 +297,7 @@ void raytrace_solve_general(
   gsl_rng* r = gsl_rng_alloc(gsl_rng_taus); /* global rng generator */
   long seed = time(NULL);
   gsl_rng_set(r, seed);                     /* seed the rng */
-    
+
   
   for (i=0; i<n; ++i) {
     xi = xslit[i];       /* x coord */
@@ -327,7 +327,7 @@ void raytrace_solve_general(
     //z0 = zt;
     //z0 = (zt / fabs(zt)) * sqrt(1.0 - xt*xt - yt*yt);
 
-/*
+
 	xt = x0;
 	yt = (COS_NU_G1 * y0) - (SIN_NU_G1 * z0);
 	zt = (SIN_NU_G1 * y0) + (COS_NU_G1 * z0);
@@ -337,7 +337,7 @@ void raytrace_solve_general(
 	z = (SIN_MU_G0 * xt) + (COS_MU_G0 * zt);
 	
 	xt = x;
-	yt = y - (li/SIGMA_E);
+	yt = y - (li/SIGMA_G);
 	zt = z;
 	
 	zt = (zt / fabs(zt)) * sqrt(1.0 - xt*xt - yt*yt);
@@ -353,10 +353,9 @@ void raytrace_solve_general(
 	x = xt;
 	y = yt;
 	z = zt;
-*/	
-	
+
     /* INTO GRISM RF and GRISM RELATION */
-    
+/*    
     xt = x0;
     yt = (-li / SIGMA_G) + (COS_NU_G1 * y0) - (SIN_NU_G1 * z0);
     zt = (SIN_NU_G1 * y0) + (COS_NU_G1 * z0);
@@ -367,7 +366,7 @@ void raytrace_solve_general(
     x = xt;
     y = (COS_NU_G2 * yt) - (SIN_NU_G2 * zt);
     z = (SIN_NU_G2 * yt) + (COS_NU_G2 * zt);
-    
+*/        
     /* ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::*/
 
     /* CAM-COLL */
