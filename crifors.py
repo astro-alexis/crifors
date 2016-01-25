@@ -116,7 +116,7 @@ Option details:
 --plot-psf
     Opens an interactive plot of the slit psf function and exits.
 --polarimeter
-    Adds polarimeter shift to ray coordinates. 
+    Adds polarimeter shift to ray coordinates.
 --psf=PSF
     Point spread function of source. Currently only 'gaussian' is supported.
     (point, uniform, gaussian)
@@ -130,7 +130,7 @@ Option details:
     Convolves map of rays with a 2D kernel, boosting signal to noise in order to speed up computation.
 --wavemap
     Gives output spectrum in wavelength value for each pixel instead of count values.
-     
+
 Examples:
 >> python crifors.py J --telluric --noise --nrays=1e9
     This will simulate a J band image using the included PHOENIX spectrum.
@@ -194,7 +194,7 @@ def main():
 
     # ADD NOISE
     if args["--noise"]:
-        core.add_noise(simulator)
+        core.noise.add_noise(simulator)
 
     t1 = time.time()
     d1 = time.strftime("%Y-%m-%d_%H.%M.%S", time.gmtime())
@@ -211,15 +211,15 @@ def main():
         ax2 = plt.subplot(gs[1])
         if (simulator.wavemap==True):
             im= ax1.imshow(simulator.outwaves, origin="lower", interpolation='nearest', cmap="hot",
-            vmin=simulator.det_wl_lim.min(), vmax=simulator.det_wl_lim.max())     
+            vmin=simulator.det_wl_lim.min(), vmax=simulator.det_wl_lim.max())
             from mpl_toolkits.axes_grid1 import make_axes_locatable		# Tool to get axes to colorbar
             divider=make_axes_locatable(ax1)
-            cax=divider.append_axes("right", size="5%", pad=0.05)		# Places colorbar next to image with 'nice' size 
+            cax=divider.append_axes("right", size="5%", pad=0.05)		# Places colorbar next to image with 'nice' size
             plt.colorbar(im, ax=ax1, cax=cax) # orientation='horizontal' (remove cax if horizontal bar is desired)
             ax1.set_title("CRIRES+ %s-band, echang=%s, Wavemap" % (simulator.band, simulator.echang))
         else:
             ax1.imshow(simulator.outarr, origin="lower", interpolation='nearest', cmap="hot")
-            ax1.set_title("CRIRES+ %s-band, echang=%s" % (simulator.band, simulator.echang)) 
+            ax1.set_title("CRIRES+ %s-band, echang=%s" % (simulator.band, simulator.echang))
         ax2.plot(simulator.source_spectrum[0], simulator.source_spectrum[1])
         ax2.set_color_cycle(['yellow', 'gold','goldenrod','orange', 'darkorange', 'OrangeRed',
          'red', 'crimson', 'maroon', 'black',])
@@ -230,7 +230,7 @@ def main():
         #ax2.set_title("PHOENIX model, Teff=3000K, log(g)=5.0, [M/H]=0.0")
         plt.tight_layout()
         plt.show()
-        
+
     else:
         # WRITE TO FITS FILE
         core.write_to_fits(simulator)
