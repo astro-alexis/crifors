@@ -310,49 +310,34 @@ void raytrace_solve_general(
     y0 = yi / veclen;
     z0 = F_COL / veclen;
 
-    /* BLAZE FUNCTION */
-    //xb = xx;
-
     /* :::::::::::::::::::: GRATING :::::::::::::::::::::::::::::::::*/
-    /* INTO PLANE RF */
-    //xt = x0 ;
-    //yt = y0 * COS_NU_G0 - z0 * SIN_NU_G0;
-    //zt = y0 * SIN_NU_G0 + z0 * COS_NU_G0;
-    /* PLANE RELATION */
-    //x = xt / n_g;
-    //y = yt / n_g;
-    //x0 = xt;
-    //y0 = yt;
-    /* NORMALIZATION AFTER PLANE RELATION (REFRACTION) */
-    //z0 = zt;
-    //z0 = (zt / fabs(zt)) * sqrt(1.0 - xt*xt - yt*yt);
-
-
-	xt = x0;
-	yt = (COS_NU_G1 * y0) - (SIN_NU_G1 * z0);
-	zt = (SIN_NU_G1 * y0) + (COS_NU_G1 * z0);
-	
-	x = (COS_MU_G0 * xt) - (SIN_MU_G0 * zt);
-	y = yt;
-	z = (SIN_MU_G0 * xt) + (COS_MU_G0 * zt);
-	
+	/* INTO GRISM */
+	// Rotation about y-axis and correction for gamma
+	x = (COS_MU_G0 * x0) - (SIN_MU_G0 * z0);
+	y = y0;
+	z = (SIN_MU_G0 * x0) + (COS_MU_G0 * z0);
+	// rotation about x-axis
 	xt = x;
-	yt = y - (li/SIGMA_G);
-	zt = z;
+	yt = (COS_NU_G1 * y) - (SIN_NU_G1 * z);
+	zt = (SIN_NU_G1 * y) + (COS_NU_G1 * z);
 	
-	zt = (zt / fabs(zt)) * sqrt(1.0 - xt*xt - yt*yt);
-
-	x = (COS_MU_G1 * xt) - (SIN_MU_G1 * zt);
-	y = yt;
-	z = (SIN_MU_G1 * xt) + (COS_MU_G1 * zt);	
-
+	/* GRISM RELATION */
+	x = xt;
+	y = yt - (li/SIGMA_G);
+	z = zt;
+	/* NORMALIZATION AFTER GRATING RELATION */
+	z = (z / fabs(z)) * sqrt(1.0 - x*x - y*y);
+	
+	/* OUT OF GRISM */
+	// retrace way out; first rotation about x-axis
 	xt = x;
 	yt = (COS_NU_G2 * y) - (SIN_NU_G2 * z);
 	zt = (SIN_NU_G2 * y) + (COS_NU_G2 * z);
-	
-	x = xt;
+	// then rotation about y-axis
+	x = (COS_MU_G1 * xt) - (SIN_MU_G1 * zt);
 	y = yt;
-	z = zt;
+	z = (SIN_MU_G1 * xt) + (COS_MU_G1 * zt);
+
 
     /* INTO GRISM RF and GRISM RELATION */
 /*    
@@ -366,7 +351,8 @@ void raytrace_solve_general(
     x = xt;
     y = (COS_NU_G2 * yt) - (SIN_NU_G2 * zt);
     z = (SIN_NU_G2 * yt) + (COS_NU_G2 * zt);
-*/        
+*/    
+    
     /* ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::*/
 
     /* CAM-COLL */
@@ -389,7 +375,7 @@ void raytrace_solve_general(
 //    y = -(SIN_MU_E1*SIN_NU_E1) * xt + (COS_NU_E1 * yt - COS_MU_E1*SIN_NU_E1 * zt);
 //    z = (SIN_MU_E1*COS_NU_E1) * xt + (SIN_NU_E1 * yt + COS_MU_E1*COS_NU_E1 * zt);
 
-
+	/* INTO ECHELLE RF */
 	xt = x;
 	yt = (COS_NU_E0 * y) - (SIN_NU_E0 * z);
 	zt = (SIN_NU_E0 * z) + (COS_NU_E0 * z);
@@ -398,12 +384,14 @@ void raytrace_solve_general(
 	y = yt;
 	z = (SIN_MU_E0 * xt) + (COS_MU_E0 *z);
 	
+	/* ECHELLE RELATION */
 	xt = -x + (ORDER * li / SIGMA_E);
 	yt = -y;
 	zt = -z;
-	
+	// NORMALISATION AFTER ECHELLE RELATION
 	zt = (zt / fabs(zt)) * sqrt(1.0 - yt*yt - xt*xt);
 	
+	/* OUT OF ECHELLE RF */
 	x = (COS_MU_E1 * xt) - (SIN_MU_E1 * zt);
 	y = yt;
 	z = (SIN_MU_E1 * xt) + (COS_MU_E1 * zt);
@@ -421,7 +409,7 @@ void raytrace_solve_general(
 
     /* PROJECTION ONTO DETECTOR */
     xd = x/z * F_CAM;
-    //yd = (y/z * F_CAM  + yd_0);
+    //yd = y/z * F_CAM;
     yd = -(y/sqrt(x*x + z*z) * F_CAM);
 
     switch (RETURN_MODE) {
