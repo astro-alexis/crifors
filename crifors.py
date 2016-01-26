@@ -194,7 +194,7 @@ def main():
 
     # ADD NOISE
     if args["--noise"]:
-        core.add_noise(simulator)
+        core.noise.add_noise(simulator)
 
     t1 = time.time()
     d1 = time.strftime("%Y-%m-%d_%H.%M.%S", time.gmtime())
