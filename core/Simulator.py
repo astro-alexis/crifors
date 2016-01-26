@@ -96,7 +96,7 @@ class Simulator(object):
 
     def add_noise(self):
         if self.noise:
-            add_noise(self)
+            noise.add_noise(self)
 
 
     def simulate(self, plot=False, **kwargs):
@@ -133,9 +133,6 @@ class Simulator(object):
 
             pdf_ratio = scipy.integrate.simps(mpdf, mwaves) / pdf_tot
             mnrays = int(pdf_ratio * self.nrays)
-            # just in case we are given 0 rays to simulate
-          #  while mnrays <= 0:							# This makes no sense. 
-          #      mnrays = np.random.poisson(mnrays)		# np.random.poisson(0)=0.
             waves_in = wf.sample_cdf(mwaves, mpdf, mnrays)
             self.nrays_per_order.append(mnrays)
 
