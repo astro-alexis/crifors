@@ -56,6 +56,10 @@ def add_noise(sim):
     det_left = det_left + dark_current(sim.dl_dc, sim.tobs, shape, det="left")
     det_mid = det_mid + dark_current(sim.dm_dc, sim.tobs, shape, det="middle")
     det_right = det_right + dark_current(sim.dr_dc, sim.tobs, shape, det="right")
+    
+    sim.outarr[:, :sim.nxpix] = det_left
+    sim.outarr[:, sim.nxpix:2*sim.nxpix] = det_mid
+    sim.outarr[:, 2*sim.nxpix:3*sim.nxpix] = det_right
 
     sim.outarr = gain(sim.outarr, sim.inv_gain)
 
