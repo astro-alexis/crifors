@@ -378,7 +378,7 @@ void raytrace_solve_general(
 	/* INTO ECHELLE RF */
 	xt = x;
 	yt = (COS_NU_E0 * y) - (SIN_NU_E0 * z);
-	zt = (SIN_NU_E0 * z) + (COS_NU_E0 * z);
+	zt = (SIN_NU_E0 * y) + (COS_NU_E0 * z);
 	
 	x = (COS_MU_E0 * xt) - (SIN_MU_E0 * zt);
 	y = yt;
