@@ -380,9 +380,9 @@ void raytrace_solve_general(
 	yt = (COS_NU_E0 * y) - (SIN_NU_E0 * z);
 	zt = (SIN_NU_E0 * z) + (COS_NU_E0 * z);
 	
-	x = (COS_MU_E0 * xt) - (SIN_MU_E0 * z);
+	x = (COS_MU_E0 * xt) - (SIN_MU_E0 * zt);
 	y = yt;
-	z = (SIN_MU_E0 * xt) + (COS_MU_E0 *z);
+	z = (SIN_MU_E0 * xt) + (COS_MU_E0 * zt);
 	
 	/* ECHELLE RELATION */
 	xt = -x + (ORDER * li / SIGMA_E);
@@ -403,7 +403,6 @@ void raytrace_solve_general(
 	x = xt;
 	y = yt;
 	z = zt;
-	
 
     /* ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::*/
 
