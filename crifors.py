@@ -220,6 +220,14 @@ def main():
         else:
             ax1.imshow(simulator.outarr, origin="lower", interpolation='nearest', cmap="hot")
             ax1.set_title("CRIRES+ %s-band, echang=%s" % (simulator.band, simulator.echang))
+
+        ax1.plot([simulator.nxpix,simulator.nxpix],[0,simulator.nypix], '-w',lw=1)
+        ax1.plot([simulator.nxpix*2,simulator.nxpix*2],[0,simulator.nypix],'-w')
+        ax1.axis((0,simulator.nxpix * simulator.ndet,0,simulator.nypix))
+        ax1.set_xticks([])
+        ax1.set_yticks([])
+
+
         ax2.plot(simulator.source_spectrum[0], simulator.source_spectrum[1])
         ax2.set_color_cycle(['yellow', 'gold','goldenrod','orange', 'darkorange', 'OrangeRed',
          'red', 'crimson', 'maroon', 'black',])
@@ -227,6 +235,7 @@ def main():
             ax2.plot(mwaves,mpdf)
         ax2.set_xlabel("Wavelength (nm)")
         ax2.set_ylabel("PDF")
+        ax2.set_yticks([])
         #ax2.set_title("PHOENIX model, Teff=3000K, log(g)=5.0, [M/H]=0.0")
         plt.tight_layout()
         plt.show()
