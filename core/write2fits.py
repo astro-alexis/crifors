@@ -182,6 +182,9 @@ def write_to_fits(sim, gzip=True):
     Write header and data to FITS HDU. Compress if necessary.
     """
 
+    if sim.wavemap:
+        sim.outarr = sim.outwaves
+
     # CREATE OUTPUT PATH
     sim.outpath = output_path(sim.outfn)
 
