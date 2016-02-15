@@ -184,18 +184,21 @@ def write_to_fits(sim, gzip=True):
 
     if sim.wavemap:
         sim.outarr = sim.outwaves
+        dtype = np.float
+    else:
+        dtype = np.int16
 
     # CREATE OUTPUT PATH
     sim.outpath = output_path(sim.outfn)
 
     # create PrimaryHDU object to encapsulate data
     log.info("Creating HDU...")
-    hdu = fits.PrimaryHDU(np.asarray(sim.outarr, dtype=np.uint16))
+    hdu = fits.PrimaryHDU(np.asarray(sim.outarr, dtype=dtype))
 
     # create ImageHDU objects for detector images
-    hdu_dl = fits.ImageHDU(np.asarray(sim.outarr[:, :sim.nxpix],dtype=np.uint16))
-    hdu_dm = fits.ImageHDU(np.asarray(sim.outarr[:, sim.nxpix:2*sim.nxpix], dtype=np.uint16))
-    hdu_dr = fits.ImageHDU(np.asarray(sim.outarr[:, 2*sim.nxpix:3*sim.nxpix],dtype=np.uint16))
+    hdu_dl = fits.ImageHDU(np.asarray(sim.outarr[:, :sim.nxpix],dtype=dtype))
+    hdu_dm = fits.ImageHDU(np.asarray(sim.outarr[:, sim.nxpix:2*sim.nxpix], dtype=dtype))
+    hdu_dr = fits.ImageHDU(np.asarray(sim.outarr[:, 2*sim.nxpix:3*sim.nxpix],dtype=dtype))
     hdulist = fits.HDUList([hdu, hdu_dl, hdu_dm, hdu_dr])
     header = hdu.header
 
