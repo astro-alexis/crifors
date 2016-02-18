@@ -86,8 +86,8 @@ void raytrace_interp_bin(
   unsigned long i;                            /* wavelength iterator */
   double xd, yd;
   double sx, sy, sw, sh;
-  double xb, xm, xt, yb, ym, yt, phi;
-  double xdp, ydp;
+  double xb, xm, xt, yb, ym, yt;
+  double xdp, ydp, dx, dy;
 
   // CUBIC SPLINES
   gsl_interp_accel* acc1 = gsl_interp_accel_alloc();
@@ -113,10 +113,8 @@ void raytrace_interp_bin(
   gsl_spline_init(spline7, cwl, cphi, cn);
 
   for (i=0; i<n; ++i) {
-
-    phi = gsl_spline_eval(spline7, wl[i], acc7);
-    sx = slitx[i]*cos(phi) - slity[i]*sin(phi);
-    sy = slitx[i]*sin(phi) + slity[i]*cos(phi);
+    sx = slitx[i];
+    sy = slity[i];
     xb = gsl_spline_eval(spline1, wl[i], acc1);
     xm = gsl_spline_eval(spline2, wl[i], acc2);
     xt = gsl_spline_eval(spline3, wl[i], acc3);
@@ -125,8 +123,13 @@ void raytrace_interp_bin(
     yt = gsl_spline_eval(spline6, wl[i], acc6);
     sh = sqrt((xt-xb)*(xt-xb) + (yt-yb)*(yt-yb));
     sw = sh / slit_ratio;
-    xd = xm + sx * sw;
-    yd = ym + sy * sh;
+    if (sy >= 0.0) {    // upper half of slit
+        dx = xt-xm;
+    } else {            // lower half
+        dx = xm-xb;
+    }
+    xd = xm + (sx*sw) - (dx*sy*2);
+    yd = ym + (sy*sh);
 
     /* LEFT DETECTOR */
     xdp =  xd-XDL_0 + (xd-XDL_0)*cos(TAUDL) + (yd-YDL_0)*sin(TAUDL);
@@ -138,7 +141,7 @@ void raytrace_interp_bin(
       iy = (int)floor(ydp + YPIX_1_2);
       if (iy >= 0 && iy < NYPIX) {
         out[ix+NXPIX*iy] += 1;
-        outwaves[ix+NXPIX*iy] += wl[i];	
+        outwaves[ix+NXPIX*iy] += wl[i];
       }
     }
     /* MIDDLE DETECTOR */
@@ -169,8 +172,8 @@ void raytrace_interp_bin(
     }
     progress_bar(i, n);
   }
-  
-  
+
+
   gsl_spline_free(spline1);
   gsl_spline_free(spline2);
   gsl_spline_free(spline3);
@@ -262,7 +265,7 @@ void raytrace_solve_general(
   const double COS_MU_G0 = cos(MU_G0);
   const double SIN_MU_G0 = sin(MU_G0);
   const double COS_MU_G1 = cos(MU_G1);
-  const double SIN_MU_G1 = sin(MU_G1); 
+  const double SIN_MU_G1 = sin(MU_G1);
   const double COS_NU_G1 = cos(NU_G1);
   const double SIN_NU_G1 = sin(NU_G1);
   const double COS_NU_G2 = cos(NU_G2);
@@ -271,7 +274,7 @@ void raytrace_solve_general(
   const double X_OFF_L = (double)NXPIX/6.0;
   const double X_OFF_M = X_OFF_L + (double)NYPIX;
   const double X_OFF_R = X_OFF_M + (double)NYPIX;
-  const int NXPIX_1_3 = NXPIX / 3;	
+  const int NXPIX_1_3 = NXPIX / 3;
   const int NXPIX_2_3 = 2 * NXPIX_1_3;
   const double TAUDL = cradians(TAU_DL);
   const double TAUDM = cradians(TAU_DM);
@@ -284,8 +287,8 @@ void raytrace_solve_general(
   double n_g;
   double beta;
   double blaze_eff;
-  long ix; /* x coordinate [pix] */		
-  long iy; /* y coordinate [pix] */		
+  long ix; /* x coordinate [pix] */
+  long iy; /* y coordinate [pix] */
   double x, x0, xi, xd, xt, y, y0, yd, yi, yt, z, z0, zt, fcc;
   double xdpld, xdpmd, xdprd;
   unsigned long i;   /* iterator */
@@ -298,7 +301,7 @@ void raytrace_solve_general(
   long seed = time(NULL);
   gsl_rng_set(r, seed);                     /* seed the rng */
 
-  
+
   for (i=0; i<n; ++i) {
     xi = xslit[i];       /* x coord */
     yi = yslit[i];       /* y coord */
@@ -320,14 +323,14 @@ void raytrace_solve_general(
 	xt = x;
 	yt = (COS_NU_G1 * y) - (SIN_NU_G1 * z);
 	zt = (SIN_NU_G1 * y) + (COS_NU_G1 * z);
-	
+
 	/* GRISM RELATION */
 	x = xt;
 	y = yt - (li/SIGMA_G);
 	z = zt;
 	/* NORMALIZATION AFTER GRATING RELATION */
 	z = (z / fabs(z)) * sqrt(1.0 - x*x - y*y);
-	
+
 	/* OUT OF GRISM */
 	// retrace way out; first rotation about x-axis
 	xt = x;
@@ -340,19 +343,19 @@ void raytrace_solve_general(
 
 
     /* INTO GRISM RF and GRISM RELATION */
-/*    
+/*
     xt = x0;
     yt = (-li / SIGMA_G) + (COS_NU_G1 * y0) - (SIN_NU_G1 * z0);
     zt = (SIN_NU_G1 * y0) + (COS_NU_G1 * z0);
-    // NORMALIZATION AFTER GRATING RELATION 
+    // NORMALIZATION AFTER GRATING RELATION
     zt = (zt / fabs(zt)) * sqrt(1.0 - xt*xt - yt*yt);
 
-    // OUT OF GRISM RF 
+    // OUT OF GRISM RF
     x = xt;
     y = (COS_NU_G2 * yt) - (SIN_NU_G2 * zt);
     z = (SIN_NU_G2 * yt) + (COS_NU_G2 * zt);
-*/    
-    
+*/
+
     /* ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::*/
 
     /* CAM-COLL */
@@ -379,27 +382,27 @@ void raytrace_solve_general(
 	xt = x;
 	yt = (COS_NU_E0 * y) - (SIN_NU_E0 * z);
 	zt = (SIN_NU_E0 * y) + (COS_NU_E0 * z);
-	
+
 	x = (COS_MU_E0 * xt) - (SIN_MU_E0 * zt);
 	y = yt;
 	z = (SIN_MU_E0 * xt) + (COS_MU_E0 * zt);
-	
+
 	/* ECHELLE RELATION */
 	xt = -x + (ORDER * li / SIGMA_E);
 	yt = -y;
 	zt = -z;
 	// NORMALISATION AFTER ECHELLE RELATION
 	zt = (zt / fabs(zt)) * sqrt(1.0 - yt*yt - xt*xt);
-	
+
 	/* OUT OF ECHELLE RF */
 	x = (COS_MU_E1 * xt) - (SIN_MU_E1 * zt);
 	y = yt;
 	z = (SIN_MU_E1 * xt) + (COS_MU_E1 * zt);
-	
+
 	xt = x;
 	yt = (COS_NU_E1 * y) - (SIN_NU_E1 * z);
 	zt = (SIN_NU_E1 * y) + (COS_NU_E1 * z);
-	
+
 	x = xt;
 	y = yt;
 	z = zt;
@@ -427,7 +430,7 @@ void raytrace_solve_general(
       iy = (int)floor(ydp + YPIX_1_2);
       if (iy >= 0 && iy < NYPIX) {
         outcounts[ix+NXPIX*iy] += 1;
-        outwaves[ix+NXPIX*iy] += li;	
+        outwaves[ix+NXPIX*iy] += li;
       }
     }
     /* MIDDLE DETECTOR */
@@ -454,9 +457,9 @@ void raytrace_solve_general(
       if (iy >= 0 && iy < NYPIX) {
         outcounts[ix+NXPIX*iy] += 1;
         outwaves[ix+NXPIX*iy] += li;
-      
-		       }   
-        }			
+
+		       }
+        }
         break;
 
       /* RETURN EXACT LOCATIONS [mm] */
