@@ -92,6 +92,10 @@ is fed into the spectrograph.  It assumes a continuous, uniform distribution.
 
 	python crifors.py Y F
 
+## etalon
+By supplying `e`, `E` or `etalon`, an etalon spectrum will be used as input spectrum.
+
+    python crifors.py H E
 
 # command line options
 

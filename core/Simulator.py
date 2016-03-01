@@ -183,6 +183,8 @@ class Simulator(object):
                 return self.phx_model()
             elif self.source[0].lower() in "f flatfield".split():
                 return self.flatfield()
+            elif self.source[0].lower() in "e etalon".split():
+                return self.etalon()
             else:
                 return self.import_one_file()
         elif len(self.source) == 0:
@@ -584,6 +586,23 @@ class Simulator(object):
         n = np.int(np.ceil( (wmax-wmin) / dw ))
         wavelengths = np.linspace(wmin, wmax, num=n)
         flux = np.ones(wavelengths.size)
+        if plot:
+            plt.plot(wavelengths, flux)
+            plt.show()
+        return wavelengths, flux
+
+    def etalon(self, plot=False):
+        desc = "Importing source spectrum: etalon"
+        self.FITS_TYPE = "WAVE"
+        self.FITS_SOURCE = "ETALON"
+        self.FITS_CATG = "CAL"
+        self.FITS_SRC = 'ETALON'
+        self.FITS_INFILE1 = None
+        self.FITS_INFILE2 = None
+        log.info(desc)
+        data = np.load(eta_path)
+        wavelengths = data['wav']
+        flux = data['spec']
         if plot:
             plt.plot(wavelengths, flux)
             plt.show()
