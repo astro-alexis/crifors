@@ -107,6 +107,9 @@ class Simulator(object):
         waves, pdf = self.source_spectrum[0], self.source_spectrum[1]
 
         pdf_tot = scipy.integrate.simps(pdf, waves)
+        if np.isnan(pdf_tot):
+            log.warn("Integrating the source spectrum failed! Trying trapz() instead of simps()...")
+        pdf_tot = scipy.integrate.trapz(pdf, waves)
         t0 = time.time()
         d0 = time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime())
 
@@ -131,7 +134,11 @@ class Simulator(object):
                 log.warning("Order %s failed. Source spectrum does not have wavelengths in this range.", m)
                 continue
 
-            pdf_ratio = scipy.integrate.simps(mpdf, mwaves) / pdf_tot
+            mpdf_tot = scipy.integrate.simps(mpdf, mwaves)
+            if np.isnan(mpdf_tot):
+                log.warn("Integrating the source spectrum failed! Trying trapz() instead of simps()...")
+                mpdf_tot = scipy.integrate.trapz(mpdf, mwaves)
+            pdf_ratio = mpdf_tot / pdf_tot
             mnrays = int(pdf_ratio * self.nrays)
             waves_in = wf.sample_cdf(mwaves, mpdf, mnrays)
             self.nrays_per_order.append(mnrays)
