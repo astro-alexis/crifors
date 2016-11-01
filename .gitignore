@@ -12,3 +12,4 @@
 data/codevtrace/parsed/*
 output/*
 logs/*
+refdata/*
