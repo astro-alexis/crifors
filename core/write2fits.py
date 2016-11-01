@@ -144,30 +144,33 @@ def add_simulation_keywords(header, sim):
     header['HIERARCH ESO SIMU SIM TIME'] = (TIME, '[s] simulation time')
     header['HIERARCH ESO SIMU SPREAD'] = (sim.spread, 'Each pixel convolved with a kernel.')
 
-
-def add_default_keywords(header):
-    log.info("Adding default keywords.")
-    header['HIERARCH ESO OBS TARG NAME'] = ('input star spectrum', 'OB target name')
+def add_classifier_keywords(header):
+    log.info("Adding DPR keywords.")
     header['HIERARCH ESO DPR CATG'] = ('SCIENCE', 'Observation category')
     header['HIERARCH ESO DPR TECH'] = ('SPECTRUM')
     header['HIERARCH ESO DPR TYPE'] = ('OBJECT', 'Observation type')
+    header['HIERARCH ESO OBS TARG NAME'] = ('input star spectrum', 'OB target name')
     header['HIERARCH ESO INS MODE'] = ('SCIENCE', 'Instrument mode')
+    header['HIERARCH ESO INS SLIT2 DECKER'] = ('', 'Decker layout (position)')
+    header['HIERARCH ESO INS POL POS'] = ('', 'Polarimeter selection')
+    header['HIERARCH ESO INS CROSS BAND'] = ('', 'Band name for the cross-disperser')
+    header['HIERARCH ESO INS GRAT SETNO'] = ('', 'Fixed echelle settings')
+
+
+def add_default_keywords(header):
+    log.info("Adding default keywords.")
     header['HIERARCH ESO INS FILT1 ENC'] = ('2666', 'Absolute position [Enc]')
     header['HIERARCH ESO INS FILT1 NAME'] = ('Ks', 'Element name')
     header['HIERARCH ESO INS FILT1 NO'] = (5, 'Element number')
     header['HIERARCH ESO INS GRAT ENC'] = (71999, 'Absolute position [Enc]')
     header['HIERARCH ESO INS GRAT ORDER'] = (12, 'Grating order')
-    header['HIERARCH ESO INS GRAT SETNO'] = ('', 'Fixed echelle settings')
     header['HIERARCH ESO INS CROSS ENC']  = ('', 'Angle for the cross-disperser')
     header['HIERARCH ESO INS CROSS ORDER'] = ('', 'Order for the cross-disperser') # PROBABLY OBSOLETE
-    header['HIERARCH ESO INS CROSS BAND'] = ('', 'Band name for the cross-disperser')
     header['HIERARCH ESO INS SLIT1 ENC'] = (5564, 'Absolute position [Enc]')
     header['HIERARCH ESO INS SLIT1 POS'] = (0.201, 'Position [arcsec]')
     header['HIERARCH ESO INS SLIT1 WID'] = (0.210, 'Slit width [arcsec]')
     header['HIERARCH ESO INS SLIT2 ENC'] = (5010, 'Absolute position [Enc]')
     header['HIERARCH ESO INS SLIT2 POS'] = (0.570, 'Position [mm]')
-    header['HIERARCH ESO INS SLIT2 DECKER'] = ('', 'Decker layout (position)')
-    header['HIERARCH ESO INS POL POS'] = ('', 'Polarimeter selection')
     header['HIERARCH ESO INS POL ANGLE'] = ('', 'Polarimeter rotation angle (0 or 180)')
     header['HIERARCH ESO DET CON OPMODE'] = ('NORMAL', 'Operational Mode')
     header['HIERARCH ESO DET DIT'] = (10.0, 'Integration Time')
