@@ -166,7 +166,7 @@ import logging
 #                              MAIN PROGRAM
 # :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-def main():
+def main(log, argv):
 
     # PROGRAM START TIME + DATE STAMPS
     t0 = time.time()
@@ -174,7 +174,7 @@ def main():
 
     # PARSE COMMAND LINE ARGUMENTS
     _doc_fmt = [__version__]
-    args = core.docopt(__doc__.format(*_doc_fmt), version=__version__)
+    args = core.docopt(__doc__.format(*_doc_fmt), argv=argv, version=__version__)
 
     log.info("CRIRES+ Forward Simulator (CRIForS) v%s", __version__)
     log.info("Start time: %s", d0)
@@ -258,9 +258,7 @@ def main():
             log.info("Shell call failed. Just run the following line:", exc_info=False)
             log.info(shell_call, exc_info=False)
 
-    sys.exit(0)
-
-if __name__ == "__main__":
+def prepare_logging():
     pname = os.path.splitext(os.path.basename(__file__))[0]
     log_path = os.path.join(paths.logs_dir, pname)
     if not os.path.isdir(log_path):
@@ -278,4 +276,8 @@ if __name__ == "__main__":
     console.setLevel(logging.DEBUG)
     console.setFormatter(formatter)
     logging.getLogger('').addHandler(console)
-    main()
+    return log
+
+if __name__ == "__main__":
+    log = prepare_logging()
+    main(log, sys.argv[1:])
