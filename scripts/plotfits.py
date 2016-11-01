@@ -36,7 +36,7 @@ for i,h in enumerate(hdulist[1:]):
     img = ndimage.rotate(h.data, rotAng, cval=plt.nan)
     nxr, nyr = img.shape
 
-    plt.imshow(img, interpolation='nearest', cmap=plt.cm.hot,
+    plt.imshow(plt.log10(img), interpolation='nearest', cmap=plt.cm.hot,
         extent=(cenX - nxr/2.0,
                 cenX + nxr/2.0,
                 cenY - nyr/2.0,
