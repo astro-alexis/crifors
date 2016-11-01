@@ -14,7 +14,7 @@
 // k:iteration
 // n:total number
 inline void progress_bar(int k, int n) {
-  int res = 20;     // progress bar resolution
+  /* int res = 20;     // progress bar resolution
   int window = 50;  // progress bar width
   int counter;
   int progress;
@@ -37,7 +37,7 @@ inline void progress_bar(int k, int n) {
     }
   }
   printf("\b] %6.2f %%\r", (ratio*100.0) );
-  fflush(stdout);
+  fflush(stdout); */
 }
 
 
@@ -109,7 +109,7 @@ void slit_decker1_psf(
     y_out[i] = y;
     progress_bar(i, n);
   }
-	printf("\n");
+	//printf("\n");
   gsl_rng_free(rng);
 }
 
@@ -144,7 +144,7 @@ void slit_decker2_psf(
     y_out[i] = y;
     progress_bar(i, n);
   }
-	printf("\n");
+	//printf("\n");
   gsl_rng_free(rng);
 }
 
@@ -184,6 +184,6 @@ void slit_gaussian_psf(
     y_out[i] = -x * sin(tau) + y * cos(tau);
     progress_bar(i, n);
   }
-	printf("\n");
+	//printf("\n");
   gsl_rng_free(rng);
 }

@@ -11,7 +11,7 @@
 
 // progress bar, inspired by Jinglin Zhao
 inline void progress_bar(int k, int n) {
-  int res = 20;     // progress bar resolution
+  /* int res = 20;     // progress bar resolution
   int window = 50;  // progress bar width
   int counter;
   int progress;
@@ -34,7 +34,7 @@ inline void progress_bar(int k, int n) {
     }
   }
   printf("\b] %6.2f %%\r", (ratio*100.0) );
-  fflush(stdout);
+  fflush(stdout); */
 }
 
 
@@ -188,7 +188,7 @@ void raytrace_interp_bin(
   gsl_interp_accel_free(acc5);
   gsl_interp_accel_free(acc6);
   gsl_interp_accel_free(acc7);
-  printf("\n");
+  //printf("\n");
 }
 
 
