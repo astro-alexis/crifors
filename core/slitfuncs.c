@@ -75,7 +75,7 @@ void slit_uniform_psf(
     y_out[i] = y;
     progress_bar(i, n);
   }
-	printf("\n");
+	//printf("\n");
   gsl_rng_free(rng);
 }
 
