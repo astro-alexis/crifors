@@ -2,37 +2,39 @@
 
 import sys, os
 import logging
-
+import subprocess
 import crifors
 
 SCRIPTDIR = os.path.dirname(os.path.realpath(__file__))
 OUTDIR = os.path.join(SCRIPTDIR, 'refdata')
 FNAME_BASE = os.path.join(OUTDIR,'CR2RES_REF_')
-baseopts = ['--spread', '--nrays=1E7', '--blaze']
+NRAYS = '1E6'
+OPTS = ['--spread', '--nrays=%s'%NRAYS, '--blaze']
 
 # LOOPS
-bands = ['H', 'K', ]
+bands = ['Y', 'J', 'H', 'K', 'L', 'M']
+psfs = ['gaussian', 'polarimeter', 'uniform', 'decker1', 'decker2']
+inspectra = ['P', 'F', 'E']#, 'T']
 
 # LOGGING
-logger = logging.getLogger('gen_ref_data')
-formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
-logger.setLevel(logging.DEBUG)
-
+#logger = logging.getLogger()
+#formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+#logger.setLevel(logging.DEBUG)
 
 for band in bands:
-    print band
-    logname = FNAME_BASE + band + '.log'
-    fitsname = FNAME_BASE + band # '.fits.gz' gets added by crifors
-    for f in [logname, fitsname+'.fits.gz']:
-        if os.path.exists(f):
-            os.unlink(f)
-    hdlr = logging.FileHandler(logname)
-    hdlr.setFormatter(formatter)
-    logger.addHandler(hdlr)
+ for spec in inspectra:
+  for psf in psfs:
+    fname = FNAME_BASE + '%s_%s_%s'%(band,spec,psf) # '.fits.gz' gets added by crifors
+    print fname
+    for ext in ['.log', '.fits.gz']:
+        if os.path.exists(fname+ext):
+            os.unlink(fname+ext)
+#    hdlr = logging.FileHandler(fname+'.log')
+#    hdlr.setFormatter(formatter)
+#    logger.addHandler(hdlr)
 
-    argv = [band] + baseopts + ["--outfn='%s'"%fitsname]
-    logger.info('argv: ' + str(argv))
-    crifors.main(log=logger, argv=argv)
+    argv = [band, spec, "--psf=%s"%psf, "--outfn='%s'"%fname] + OPTS
+    subprocess.call(['./crifors.py'] + argv)
 
 
-    logger.removeHandler(hdlr)
+#    logger.removeHandler(hdlr)
