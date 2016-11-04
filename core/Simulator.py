@@ -192,6 +192,8 @@ class Simulator(object):
                 return self.flatfield()
             elif self.source[0].lower() in "e etalon".split():
                 return self.etalon()
+            elif self.source[0].lower() in "t thar".split():
+                return self.thar()
             else:
                 return self.import_one_file()
         elif len(self.source) == 0:
@@ -610,6 +612,21 @@ class Simulator(object):
         data = np.load(eta_path)
         wavelengths = data['wav']
         flux = data['spec']
+        if plot:
+            plt.plot(wavelengths, flux)
+            plt.show()
+        return wavelengths, flux
+
+    def thar(self, plot=False):
+        desc = "Importing source spectrum: ThAr"
+        self.FITS_TYPE = "WAVE"
+        self.FITS_SOURCE = "THAR"
+        self.FITS_CATG = "CAL"
+        self.FITS_SRC = 'THAR'
+        self.FITS_INFILE1 = None
+        self.FITS_INFILE2 = None
+        log.info(desc)
+        wavelengths, flux = np.loadtxt(thar_path, unpack=True)
         if plot:
             plt.plot(wavelengths, flux)
             plt.show()
