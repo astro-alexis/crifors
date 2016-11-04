@@ -9,6 +9,7 @@ from scipy.interpolate import InterpolatedUnivariateSpline
 import ConfigParser
 import logging
 import sys
+import re
 from defaults import *
 from parsecodev import get_codev_files
 import cinterface as ci
@@ -68,6 +69,16 @@ def merge(dict_1, dict_2):
     return dict((str(key), dict_1.get(key) or dict_2.get(key))
         for key in set(dict_2) | set(dict_1))
 
+def parse_std_setting(args):
+    if re.match('^[A-Z]/[1-9]/[1-9]$', args['BAND']):
+        if not std_settings.has_key(args['BAND']):
+            log.error('Unknown standard setting!')
+        args['--echang'] = std_settings[args['BAND']]
+        args['StandardSetting'] = args['BAND']
+        args['BAND'] = args['BAND'][0]
+        return True, args
+    else:
+        return False, args
 
 class Instrument(object):
     """
@@ -81,6 +92,15 @@ class Instrument(object):
         # FIRST, LOAD DEFAULT CONFIG FILES, ACCORDING TO BAND
         if cfg is None:
             cfg = dinst
+
+        self.isStandard, args = parse_std_setting(args)
+        if self.isStandard:
+            self.StandardSetting = args['StandardSetting']
+            log.info('Standard Setting: %s'%self.StandardSetting)
+        else:
+            self.StandardSetting = 'FREE'
+            log.info('No Standard Setting! FREE instead.')
+            
         self.band = args["BAND"]
         log.info("Initializing %s band.", args["BAND"])
         log.info('Loading default instrument parameters.')
@@ -269,18 +289,18 @@ class Instrument(object):
         #self.det_wl_lim = det_wl_lim
         #self.wmin = self.det_wl_lim.min()
         #self.wmax = self.det_wl_lim.max()
-        
+
         # Comparison plot with interpolation model.
         blaze_flag = int(self.blaze)
         return_mode = 1   # return in mm
 
         ndims = (21, self.orders.size)
- 
+
         solvex = np.empty(ndims)
         solvey = np.empty(ndims)
         interpx = np.empty(ndims)
         interpy = np.empty(ndims)
-		 
+
         for i,m in enumerate(self.orders):
             fn = os.path.splitext(codevparsed_path % (self.band, self.echang, m))[0] + ".npy"
             _m, wl, xbot, xmid, xtop, yb, ymid, yt, slitheight, phi = np.load(fn).T
@@ -314,9 +334,9 @@ class Instrument(object):
 
             returnx = np.empty(n)
             returny = np.empty(n)
-            returnwaves = np.empty(ndims) 
+            returnwaves = np.empty(ndims)
             returncounts = np.empty(ndims)
-		   
+
 			# require
             slit_x = np.require(slit_x, requirements=ci.req_in, dtype=np.float64)
             slit_y = np.require(slit_y, requirements=ci.req_in, dtype=np.float64)
@@ -325,7 +345,7 @@ class Instrument(object):
             returny = np.require(returny, requirements=ci.req_out, dtype=np.float64)
             returnwaves = np.require(returnwaves, requirements=ci.req_out, dtype=np.float64)
             returncounts = np.require(returncounts, requirements=ci.req_out, dtype=np.uint)
-					   
+
             func = ci.solve
             log.info("Raytracing order %s...", m)
             func(blaze_flag, return_mode, n, m, nxpix, nypix, f_col_1, f_col_2,
@@ -345,12 +365,12 @@ class Instrument(object):
             wlpmid = fxmid(x_det)
             det_wl_lim[:, i] = wlpmid
             print '\n wlpmid: ', wlpmid
-			
+
         self.det_wl_lim = det_wl_lim
         self.wmin = self.det_wl_lim.min()
-        self.wmax = self.det_wl_lim.max() 
-            
-        if plot:    
+        self.wmax = self.det_wl_lim.max()
+
+        if plot:
             solvexoff = (np.max(solvex[10, :]) + np.min(solvex[10, :])) / 2.0
             solveyoff = (np.max(solvey[10, :]) + np.min(solvey[10, :])) / 2.0
             interpxoff = (np.max(interpx[10, :]) + np.min(interpx[10, :])) / 2.0
@@ -363,7 +383,7 @@ class Instrument(object):
             solvey /= self.dpix
             interpx /= self.dpix
             interpy /= self.dpix
-            
+
             import matplotlib.pyplot as plt
             fig = plt.figure()
             ax = fig.add_subplot(111, aspect='equal')
@@ -371,9 +391,9 @@ class Instrument(object):
             ax.scatter(interpx, interpy, c='b', marker='o', label='interp')
             plt.legend()
             plt.show()
-         
+
        # exit()		# Temporary to speed simulation trials a bit.
-        
+
         if write:
             # WRITE TO ETC OUTPUT FILE
             pass
