@@ -20,8 +20,8 @@ setups = [\
 ['F','decker2'],
 ['E','decker1'],
 ['E','decker2'],
-#['T','decker1'],
-#['T','decker2'],
+['T','decker1'],
+['T','decker2'],
 ]
 
 if len(sys.argv) < 2:
@@ -30,12 +30,13 @@ else:
     std_settings = sys.argv[1:]
 
 for sett in std_settings:
-    # skip L & M for now
     if sett.startswith('L') or sett.startswith('M'):
-        continue
+        continue     # skip L & M for now
 
     for setup in setups:
         spec, psf = setup
+        if sett.startswith('Y') and psf.upper() == 'T':
+            continue # The ThAr starts in J band only.
         sname = sett.replace('/','')
         fname = FNAME_BASE + '%s_%s_%s'%(sname,spec,psf) # '.fits.gz' gets added by crifors
         print fname
