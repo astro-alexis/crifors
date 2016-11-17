@@ -145,24 +145,35 @@ def add_simulation_keywords(header, sim):
     header['HIERARCH ESO SIMU SPREAD'] = (sim.spread, 'Each pixel convolved with a kernel.')
 
 def add_classifier_keywords(header, sim):
-    log.info("Adding DPR keywords.")
+    log.info("Adding classifier keywords.")
 
-    if sim.source[0].upper() not in ['F','E', 'T']:
+    # Treat BAND Information
+    header['HIERARCH ESO INS CDU BAND'] = (sim.band, 'Band name for the cross-disperser')
+    header['HIERARCH ESO INS WLEN ID'] = (sim.StandardSetting, 'Fixed echelle settings')
+    header['HIERARCH ESO INS GRAT ANG'] = (sim.echang, 'Fixed echelle settings')
+
+    # Treat SCIENCE or CALIB
+    spec = sim.source[0].upper()
+    if spec not in ['F', 'E', 'T']:
         header['HIERARCH ESO DPR CATG'] = ('SCIENCE', 'Observation category')
     else:
         header['HIERARCH ESO DPR CATG'] = ('CALIB', 'Observation category')
 
-    header['HIERARCH ESO DPR TECH'] = ('SPECTRUM')
-    header['HIERARCH ESO DPR TYPE'] = ('OBJECT', 'Observation type')
-    header['HIERARCH ESO OBS TARG NAME'] = ('input star spectrum', 'OB target name')
-    header['HIERARCH ESO INS MODE'] = ('SCIENCE', 'Instrument mode')
-    header['HIERARCH ESO INS SLIT2 DECKER'] = ('', 'Decker layout (position)')
-    header['HIERARCH ESO INS POL POS'] = ('', 'Polarimeter selection')
+    # Treat PSF, flats etc.
+    psf = sim.psf.lower()
+    if psf.startswith('decker'):
+        if psf.endswith('1'):
+            header['HIERARCH ESO INS SLIT2 DECKER'] = ('1', 'Decker layout (position)')
+        elif psf.endswith('1'):
+            header['HIERARCH ESO INS SLIT2 DECKER'] = ('2', 'Decker layout (position)')
+    else:
+        header['HIERARCH ESO INS SLIT2 DECKER'] = ('0', 'Decker layout (position)')
 
-
-    header['HIERARCH ESO INS CDU BAND'] = (sim.band, 'Band name for the cross-disperser')
-    header['HIERARCH ESO INS WLEN ID'] = (sim.StandardSetting, 'Fixed echelle settings')
-    header['HIERARCH ESO INS GRAT ANG'] = (sim.echang, 'Fixed echelle settings')
+    if spec == 'F':
+        if psf == 'uniform':
+            header['HIERARCH ESO DPR TYPE'] = ('FLAT,OPEN', 'Observation type')
+        elif psf.startswith('decker'):
+            header['HIERARCH ESO DPR TYPE'] = ('FLAT,DECKER', 'Observation type')
 
 
 def add_default_keywords(header):
@@ -185,6 +196,10 @@ def add_default_keywords(header):
     header['HIERARCH ESO DET FRAM NO'] = (1, 'Frame number')
     header['HIERARCH ESO DET FRAM TYPE'] = ('INT', 'Frame type')
     header['HIERARCH ESO DET NDIT'] = (6, '# of Sub-Integrations')
+    header['HIERARCH ESO OBS TARG NAME'] = ('unknown', 'OB target name')
+    header['HIERARCH ESO INS MODE'] = ('Unknown', 'Instrument mode')
+    header['HIERARCH ESO INS POL POS'] = ('Unknown', 'Polarimeter selection')
+    header['HIERARCH ESO DPR TECH'] = ('SPECTRUM')
 
 
 def write_to_fits(sim, gzip=True):
@@ -204,18 +219,22 @@ def write_to_fits(sim, gzip=True):
 
     # create PrimaryHDU object to encapsulate data
     log.info("Creating HDU...")
-    hdu = fits.PrimaryHDU(np.asarray(sim.outarr, dtype=dtype))
-
-    # create ImageHDU objects for detector images
-    hdu_dl = fits.ImageHDU(np.asarray(sim.outarr[:, :sim.nxpix],dtype=dtype))
-    hdu_dm = fits.ImageHDU(np.asarray(sim.outarr[:, sim.nxpix:2*sim.nxpix], dtype=dtype))
-    hdu_dr = fits.ImageHDU(np.asarray(sim.outarr[:, 2*sim.nxpix:3*sim.nxpix],dtype=dtype))
-    hdulist = fits.HDUList([hdu, hdu_dl, hdu_dm, hdu_dr])
+    hdu = fits.PrimaryHDU()#np.asarray(sim.outarr, dtype=dtype))
     header = hdu.header
 
     add_default_keywords(header)
     add_classifier_keywords(header, sim)
     add_simulation_keywords(header, sim)
+
+    # create ImageHDU objects for detector images
+    hdu_dl = fits.ImageHDU(np.asarray(sim.outarr[:, :sim.nxpix],dtype=dtype),
+                header=fits.Header({'EXTNAME':'CHIP1'}))
+    hdu_dm = fits.ImageHDU(np.asarray(sim.outarr[:, sim.nxpix:2*sim.nxpix], dtype=dtype),
+                header=fits.Header({'EXTNAME':'CHIP2'}))
+    hdu_dr = fits.ImageHDU(np.asarray(sim.outarr[:, 2*sim.nxpix:3*sim.nxpix],dtype=dtype),
+                header=fits.Header({'EXTNAME':'CHIP3'}))
+    hdulist = fits.HDUList([hdu, hdu_dl, hdu_dm, hdu_dr])
+
 
     # WRITE TO FILE
     try:
