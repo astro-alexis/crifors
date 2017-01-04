@@ -15,6 +15,7 @@ tell_dir = os.path.join(spectra_dir, "telluric")
 pol_dir = os.path.join(data_dir, "polarimeter")
 eta_dir = os.path.join(spectra_dir, "etalon")
 thar_dir = os.path.join(spectra_dir, "thar")
+flat_dir = os.path.join(spectra_dir, "flatfield")
 
 # FILENAMES
 codev_fn = "criresplus_%s_v6_echelle_angle_%s_order_%s.txt"
@@ -25,6 +26,7 @@ polsep_fn = "CRIRES_%s_sep.txt"
 polwave_fn = "FSR_%s.txt"
 eta_fn = "etalon.npz"
 thar_fn = "ThAr.dat"
+flat_fn = "twoplanck.dat"
 
 # FULL PATHS
 codevdata_path = os.path.join(codev_dir, "original", codev_fn)
@@ -36,6 +38,7 @@ polsep_path = os.path.join(pol_dir, polsep_fn)
 polwave_path = os.path.join(pol_dir, polwave_fn)
 eta_path = os.path.join(eta_dir, eta_fn)
 thar_path = os.path.join(thar_dir, thar_fn)
+flat_path = os.path.join(flat_dir, flat_fn)
 
 # SETTINGS
 dsettings_fn = "settings.cfg"

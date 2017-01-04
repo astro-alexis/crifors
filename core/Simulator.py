@@ -590,11 +590,7 @@ class Simulator(object):
         self.FITS_INFILE1 = None
         self.FITS_INFILE2 = None
         log.info(desc)
-        wmin, wmax = self.wmin, self.wmax
-        dw = self.dlamb
-        n = np.int(np.ceil( (wmax-wmin) / dw ))
-        wavelengths = np.linspace(wmin, wmax, num=n)
-        flux = np.ones(wavelengths.size)
+        wavelengths, flux = np.loadtxt(flat_path, unpack=True)
         if plot:
             plt.plot(wavelengths, flux)
             plt.show()
