@@ -135,7 +135,7 @@ class Simulator(object):
                 continue
 
             mpdf_tot = scipy.integrate.simps(mpdf, mwaves)
-            if np.isnan(mpdf_tot):
+            if np.isnan(mpdf_tot) or mpdf_tot < 0:
                 log.warn("Integrating the source spectrum failed! Trying trapz() instead of simps()...")
                 mpdf_tot = scipy.integrate.trapz(mpdf, mwaves)
             pdf_ratio = mpdf_tot / pdf_tot
