@@ -39,10 +39,19 @@ def gain(arr, invg):
     log.info("Converting e- to DN, gain = %s [DN / e-].", 1./invg)
     return arr / invg
 
+def cosmics():
+    """
+    TODO!
+    Small Gaussians with FWHM ~5 pxels.
+    Peak intenity distribution uniformly between 1/4 saturation and full saturation
+    """
+    pass
+
 def add_noise(sim):
-    det_left = sim.outarr[:, :sim.nxpix]
-    det_mid = sim.outarr[:, sim.nxpix:2*sim.nxpix]
-    det_right = sim.outarr[:, 2*sim.nxpix:3*sim.nxpix]
+    outarr = sim.outarr.astype('Float64')
+    det_left = outarr[:, :sim.nxpix]
+    det_mid = outarr[:, sim.nxpix:2*sim.nxpix]
+    det_right = outarr[:, 2*sim.nxpix:3*sim.nxpix]
     shape = det_left.shape
 
     det_left = det_left + det_bias(sim.dl_bias, det="left")
@@ -56,16 +65,16 @@ def add_noise(sim):
     det_left = det_left + dark_current(sim.dl_dc, sim.tobs, shape, det="left")
     det_mid = det_mid + dark_current(sim.dm_dc, sim.tobs, shape, det="middle")
     det_right = det_right + dark_current(sim.dr_dc, sim.tobs, shape, det="right")
-    
-    sim.outarr[:, :sim.nxpix] = det_left
-    sim.outarr[:, sim.nxpix:2*sim.nxpix] = det_mid
-    sim.outarr[:, 2*sim.nxpix:3*sim.nxpix] = det_right
 
-    sim.outarr = gain(sim.outarr, sim.inv_gain)
+    outarr[:, :sim.nxpix] = det_left
+    outarr[:, sim.nxpix:2*sim.nxpix] = det_mid
+    outarr[:, 2*sim.nxpix:3*sim.nxpix] = det_right
+    outarr = gain(outarr, sim.inv_gain)
 
-    if sim.outarr.max() > np.iinfo(np.uint16).max:
-        log.info("Clipping array values larger than %s.", np.iinfo(np.uint16).max)
-        sim.outarr[sim.outarr > np.iinfo(np.uint16).max] = np.iinfo(np.uint16).max
-    sim.outarr = np.asarray(sim.outarr, dtype=np.uint16)    
-    log.info("Converting image array back to %s.", sim.outarr.dtype)
-    
+    log.info("Clipping array values <0 and larger than %s.", np.iinfo(np.uint16).max)
+    outarr[outarr > np.iinfo(np.uint16).max] = np.iinfo(np.uint16).max
+    outarr[outarr < 0] = 0.0
+
+    outarr = outarr.astype(np.uint16)
+    sim.outarr = outarr
+    log.info("Converted image array back to %s.", sim.outarr.dtype)
