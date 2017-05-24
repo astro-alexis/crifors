@@ -3,7 +3,9 @@
 import sys, os
 from pylab import *
 
-wav = linspace(1400E-9, 2000E-9, 2E5)
+#wav = linspace(27.56, 29.52, 1000000)
+#wav = exp(wav)
+wav = linspace(930,6650,1000000)
 hc2=1.191043E-16 #kg m^4/s^3
 hc=1.98E-25 # Jm
 K=1.38E-23 # J/K
@@ -16,7 +18,7 @@ pl /= pl.max()
 
 args = sys.argv[1:]
 fname = args[0] if args else 'data/spectra/flatfield/twoplanck.dat'
-savetxt(fname, zip(wav*1E9,pl), delimiter=' ', newline='\n', fmt='%.5e')
+savetxt(fname, zip(wav*1E9,pl), delimiter=' ', newline='\n', fmt='%.8e')
 
 
 #plot(planck(wav,100))
