@@ -8,20 +8,20 @@ import crifors
 SCRIPTDIR = os.path.dirname(os.path.realpath(__file__))
 OUTDIR = os.path.join(SCRIPTDIR, 'refdata')
 FNAME_BASE = os.path.join(OUTDIR,'CR2RES_REF_')
-NRAYS = '1E5'
+NRAYS = '1E7'
 OPTS = ['--spread', '--nrays=%s'%NRAYS, '--blaze']
 
 setups = [\
-['P','gaussian'],
-['P','polarimeter'],
-['P','uniform'],
+#['P','gaussian'],
+#['P','polarimeter'],
+#['P','uniform'],
 ['F','uniform'],
-['F','decker1'],
-['F','decker2'],
-['E','decker1'],
-['E','decker2'],
-['T','decker1'],
-['T','decker2'],
+#['F','decker1'],
+#['F','decker2'],
+#['E','decker1'],
+#['E','decker2'],
+#['T','decker1'],
+#['T','decker2'],
 ]
 
 if len(sys.argv) < 2:
@@ -30,8 +30,8 @@ else:
     std_settings = sys.argv[1:]
 
 for sett in std_settings:
-    if sett.startswith('L') or sett.startswith('M'):
-        continue     # skip L & M for now
+    #if sett.startswith('L') or sett.startswith('M'):
+    #    continue     # skip L & M for now
 
     for setup in setups:
         spec, psf = setup
@@ -39,12 +39,12 @@ for sett in std_settings:
             continue # The ThAr starts in J band only.
         sname = sett.replace('/','')
         fname = FNAME_BASE + '%s_%s_%s'%(sname,spec,psf) # '.fits.gz' gets added by crifors
-        print fname
-        for ext in ['.log', '.fits.gz']:
-            if os.path.exists(fname+ext):
-                os.unlink(fname+ext)
+        if os.path.exists(fname+'fits.gz'):
+            os.unlink(fname+ext)
+            #print 'skip, %s exists'%fname
+            #continue
 
-        argv = [sett, spec, "--psf=%s"%psf, "--outfn='%s'"%fname] + OPTS
+        argv = ["--psf=%s"%psf, "--outfn='%s'"%fname] + OPTS + [sett, spec]
         subprocess.call(['./crifors.py'] + argv)
 
 
