@@ -637,10 +637,17 @@ class Simulator(object):
 
     def spreadout(self, kernel=None):
         if not kernel:
-            kernel = np.array([[0, 0, 1, 0, 0],
-                               [0, 2, 2, 2, 0],
-                               [1, 2, 5, 2, 1],
-                               [0, 2, 2, 2, 0],
-                               [0, 0, 1, 0, 0]], dtype='int16')
+            kernel = np.array([[0, 1, 1, 2, 1, 1, 0],
+                               [1, 2, 2, 3, 2, 2, 1],
+                               [1, 2, 4, 4, 4, 2, 1],
+                               [2, 3, 4, 5, 4, 3, 2],
+                               [1, 2, 4, 4, 4, 2, 1],
+                               [1, 2, 2, 3, 2, 2, 1],
+                               [0, 1, 1, 2, 1, 1, 0]],dtype='int16')
+            #kernel = np.array([[0, 0, 1, 0, 0],
+            #                   [0, 2, 2, 2, 0],
+            #                   [1, 2, 5, 2, 1],
+            #                   [0, 2, 2, 2, 0],
+            #                   [0, 0, 1, 0, 0]], dtype='int16')
         log.info("Convolving map of rays with a 2D kernel, boosting signal by a factor of %s."%np.sum(kernel) )
         self.outarr = scipy.ndimage.filters.convolve(self.outarr, kernel)
