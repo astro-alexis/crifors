@@ -5,11 +5,12 @@ from astropy.io import fits as F
 from openpyxl import load_workbook
 
 wb = load_workbook(sys.argv[1], data_only=True)
-cfg = wb['cpmcfgWLEN']
+cfg = wb['cpmcfgWVLEN_Table.csv']
 fitskeys= [c.value for c in cfg.rows[5]] # 6th row has FITS header names
 setting_col = 2       # 3rd column is std setting name
 
-with F.open(sys.argv[2]) as hdulist:
+fitsname = sys.argv[2]
+with F.open(fitsname) as hdulist:
     std = hdulist[0].header['HIERARCH ESO INS WLEN ID']
     try:
         assert(len(std.split('/'))==3)
@@ -29,5 +30,4 @@ with F.open(sys.argv[2]) as hdulist:
                 for head in [h.header for h in hdulist]:
                     head['HIERARCH ESO '+key.replace('.',' ')] = val
 
-    hdulist.writeto('test.fits', overwrite=True)
-                
+    hdulist.writeto(fitsname, overwrite=True)
