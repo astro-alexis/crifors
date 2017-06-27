@@ -194,6 +194,8 @@ class Simulator(object):
                 return self.etalon()
             elif self.source[0].lower() in "t thar".split():
                 return self.thar()
+            elif self.source[0].lower() in "g gascell".split():
+                return self.gascell()
             else:
                 return self.import_one_file()
         elif len(self.source) == 0:
@@ -627,6 +629,22 @@ class Simulator(object):
         self.FITS_INFILE2 = None
         log.info(desc)
         wavelengths, flux = np.loadtxt(thar_path, unpack=True)
+        if plot:
+            plt.plot(wavelengths, flux)
+            plt.show()
+        return wavelengths, flux
+
+    def gascell(self,plot=False):
+        desc = "Importing source spectrum: Gas cell"
+        self.FITS_TYPE = "WAVE"
+        self.FITS_SOURCE = "GASCELL"
+        self.FITS_CATG = "CAL"
+        self.FITS_SRC = 'GASCELL'
+        self.FITS_INFILE1 = None
+        self.FITS_INFILE2 = None
+        log.info(desc)
+        template=np.load(gas_path)
+        wavelengths, flux = template['wave'], template['spec']
         if plot:
             plt.plot(wavelengths, flux)
             plt.show()
