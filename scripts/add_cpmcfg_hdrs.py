@@ -26,8 +26,14 @@ with F.open(fitsname) as hdulist:
         for key,val in zip(fitskeys,values):
             if key and not '?' in key:
                 if not val: val=''
-                print(key,val)
-                for head in [h.header for h in hdulist]:
-                    head['HIERARCH ESO '+key.replace('.',' ')] = val
+                for i,hdu in enumerate(hdulist):
+                    k = 'HIERARCH ESO '+key.replace('.',' ')
+                    hdu.header[k] = val
+                    print(k,val)
+                    for s in ['STRT','CENY','END']:
+                        if s+'%s'%i in k:
+                            k=k.replace(s+'%s'%i, s)
+                            hdu.header[k] = val
+                            print(k,val)
 
     hdulist.writeto(fitsname, overwrite=True)
