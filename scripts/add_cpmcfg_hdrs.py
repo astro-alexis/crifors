@@ -29,11 +29,11 @@ with F.open(fitsname) as hdulist:
                 for i,hdu in enumerate(hdulist):
                     k = 'HIERARCH ESO '+key.replace('.',' ')
                     hdu.header[k] = val
-                    print(k,val)
+                    #print(k,val)
                     for s in ['STRT','CENY','END']:
                         if s+'%s'%i in k:
                             k=k.replace(s+'%s'%i, s)
                             hdu.header[k] = val
-                            print(k,val)
+                            #print(k,val)
 
     hdulist.writeto(fitsname, overwrite=True)
