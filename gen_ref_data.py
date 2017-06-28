@@ -7,9 +7,9 @@ import multiprocessing
 import subprocess
 
 SCRIPTDIR = os.path.dirname(os.path.realpath(__file__))
-OUTDIR = os.path.join(SCRIPTDIR, 'refdata')
+OUTDIR = os.path.join(SCRIPTDIR, 'testdata')
 FNAME_BASE = os.path.join(OUTDIR,'CRIFORS_')
-NRAYS = '1E9'
+NRAYS = '1E7'
 OPTS = ['--spread', '--nrays=%s'%NRAYS, '--blaze', '--noise']
 
 setups = [\
@@ -19,11 +19,11 @@ setups = [\
 ['F','uniform'],
 #['F','decker1'],
 #['F','decker2'],
-#['E','uniform'],
+['E','uniform'],
 #['E','decker2'],
-#['T','uniform'],
+['T','uniform'],
 #['T','decker2'],
-
+['G','uniform'],
 ]
 
 if len(sys.argv) < 2:
@@ -34,8 +34,10 @@ else:
 cmd_list = []
 
 for sett in std_settings:
-    #if sett.startswith('L') or sett.startswith('M'):
-    #    continue     # skip L & M for now
+    if sett.startswith('Y') or sett.startswith('J'):
+        continue     # skip L & M for now
+    if sett.startswith('L') or sett.startswith('M'):
+        continue     # skip L & M for now
 
     for setup in setups:
         spec, psf = setup
@@ -45,8 +47,8 @@ for sett in std_settings:
         #if sett.startswith('L') or sett.startswith('M'): continue
 
         sname = sett.replace('/','')
-        fname = FNAME_BASE + '%s_%s_%s'%(sname,spec,psf) # '.fits.gz' gets added by crifors
-        if os.path.exists(fname+'.fits.gz'):
+        fname = FNAME_BASE + '%s_%s_%s'%(sname,spec,psf) # '.fits' gets added by crifors
+        if os.path.exists(fname+'.fits'):
             #os.unlink(fname+ext)
             print 'skip, %s exists'%fname
             continue
@@ -64,7 +66,7 @@ def work(cmd):
 print cmd_list
 
 
-pool = multiprocessing.Pool(4)
+pool = multiprocessing.Pool(8)
 
 pool.map(work, cmd_list)
 
