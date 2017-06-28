@@ -202,7 +202,7 @@ def add_default_keywords(header):
     header['HIERARCH ESO DPR TECH'] = ('SPECTRUM')
 
 
-def write_to_fits(sim, gzip=True):
+def write_to_fits(sim, gzip=False):
     """Write simulation results to fits file.
 
     Write header and data to FITS HDU. Compress if necessary.
