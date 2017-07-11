@@ -7,23 +7,27 @@ import multiprocessing
 import subprocess
 
 SCRIPTDIR = os.path.dirname(os.path.realpath(__file__))
-OUTDIR = os.path.join(SCRIPTDIR, 'testdata')
+OUTDIR = os.path.join(SCRIPTDIR, 'refdata')
 FNAME_BASE = os.path.join(OUTDIR,'CRIFORS_')
-NRAYS = '1E7'
+NRAYS = '5E8'
 OPTS = ['--spread', '--nrays=%s'%NRAYS, '--blaze', '--noise']
 
 setups = [\
 #['P','gaussian'],
 #['P','polarimeter'],
 #['P','uniform'],
-['F','uniform'],
-#['F','decker1'],
-#['F','decker2'],
-['E','uniform'],
-#['E','decker2'],
-['T','uniform'],
-#['T','decker2'],
-['G','uniform'],
+#['F','uniform'],
+['F','decker1'],
+['F','decker2'],
+#['E','uniform'],
+['E','decker1'],
+['E','decker2'],
+#['T','uniform'],
+['T','decker1'],
+['T','decker2'],
+#['G','uniform'],
+['G','decker1'],
+['G','decker2'],
 ]
 
 if len(sys.argv) < 2:
@@ -34,17 +38,18 @@ else:
 cmd_list = []
 
 for sett in std_settings:
-    if sett.startswith('Y') or sett.startswith('J'):
-        continue     # skip L & M for now
     if sett.startswith('L') or sett.startswith('M'):
         continue     # skip L & M for now
 
     for setup in setups:
         spec, psf = setup
 
-        if sett.startswith('Y') and psf.upper() == 'T':
+        if sett.startswith('Y') and spec.upper() == 'T':
             continue # The ThAr starts in J band only.
-        #if sett.startswith('L') or sett.startswith('M'): continue
+
+        if spec.upper()=='G' and not (sett.startswith('H') \
+                            or sett.startswith('K')):
+            continue # gas cell is HK only
 
         sname = sett.replace('/','')
         fname = FNAME_BASE + '%s_%s_%s'%(sname,spec,psf) # '.fits' gets added by crifors
@@ -66,7 +71,7 @@ def work(cmd):
 print cmd_list
 
 
-pool = multiprocessing.Pool(8)
+pool = multiprocessing.Pool(6)
 
 pool.map(work, cmd_list)
 
