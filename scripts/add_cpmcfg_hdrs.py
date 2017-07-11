@@ -28,9 +28,11 @@ with F.open(fitsname) as hdulist:
                 if not val: val=''
                 for i,hdu in enumerate(hdulist):
                     k = 'HIERARCH ESO '+key.replace('.',' ')
-                    hdu.header[k] = val
-                    #print(k,val)
-                    for s in ['STRT','CENY','END']:
+                    wavekeys = ['STRT','CENY','END']
+                    if not any(s in k for s in wavekeys):
+                        hdu.header[k] = val
+
+                    for s in wavekeys:
                         if s+'%s'%i in k:
                             k=k.replace(s+'%s'%i, s)
                             hdu.header[k] = val
