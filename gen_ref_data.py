@@ -7,7 +7,7 @@ import multiprocessing
 import subprocess
 
 SCRIPTDIR = os.path.dirname(os.path.realpath(__file__))
-OUTDIR = os.path.join(SCRIPTDIR, 'refdata')
+OUTDIR = '/scratch/refdata'
 FNAME_BASE = os.path.join(OUTDIR,'CRIFORS_')
 NRAYS = '5E8'
 OPTS = ['--spread', '--nrays=%s'%NRAYS, '--blaze', '--noise']
@@ -16,18 +16,18 @@ setups = [\
 #['P','gaussian'],
 #['P','polarimeter'],
 #['P','uniform'],
-#['F','uniform'],
-['F','decker1'],
-['F','decker2'],
+['F','uniform'],
+#['F','decker1'],
+#['F','decker2'],
 #['E','uniform'],
-['E','decker1'],
-['E','decker2'],
+#['E','decker1'],
+#['E','decker2'],
 #['T','uniform'],
-['T','decker1'],
-['T','decker2'],
+#['T','decker1'],
+#['T','decker2'],
 #['G','uniform'],
-['G','decker1'],
-['G','decker2'],
+#['G','decker1'],
+#['G','decker2'],
 ]
 
 if len(sys.argv) < 2:
