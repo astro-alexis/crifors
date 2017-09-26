@@ -27,15 +27,19 @@ with F.open(fitsname) as hdulist:
             if key and not '?' in key:
                 if not val: val=''
                 for i,hdu in enumerate(hdulist):
+                    chip = hdu.header.get('EXTNAME','0')[-1]
                     k = 'HIERARCH ESO '+key.replace('.',' ')
                     wavekeys = ['STRT','CENY','END']
-                    if not any(s in k for s in wavekeys):
+                    wavekeychip = ['%s%s'%(foo,chip) for foo in wavekeys]
+                    if (not any(s in k for s in wavekeys)) and (chip=='0'):
+                        hdu.header[k] = val
+                    elif any(s in k for s in wavekeychip):
                         hdu.header[k] = val
 
-                    for s in wavekeys:
-                        if s+'%s'%i in k:
-                            k=k.replace(s+'%s'%i, s)
-                            hdu.header[k] = val
-                            #print(k,val)
+
+#                    for s in wavekeychip:
+#                        if s+'%s'%i in k:
+#                            k=k.replace(s+'%s'%i, s)
+#                            hdu.header[k] = val
 
     hdulist.writeto(fitsname, overwrite=True)
