@@ -29,8 +29,7 @@ with F.open(fitsname) as hdulist:
         values = [c.value for c in row]
         for key,val,d1,d2,d3 in zip(fitskeys,values,isdet1,isdet2,isdet3):
             if key and not '?' in key:
-                if val==None:
-                    #val=''
+                if val==None or val=='':
                     continue #skip key of no value!
 
                 for i,hdu in enumerate(hdulist):
