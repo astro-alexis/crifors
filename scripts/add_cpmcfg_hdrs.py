@@ -9,9 +9,9 @@ cfg = wb['cpmcfgWVLEN_Table.csv']
 fitskeys= [c.value for c in cfg.rows[5]] # 6th row has FITS header names
 setting_col = 2       # 3rd column is std setting name
 colnames = [c.value for c in cfg.rows[0]]
-isdet1 = [str(n).endswith('Det1') for n in colnames]
-isdet2 = [str(n).endswith('Det2') for n in colnames]
-isdet3 = [str(n).endswith('Det3') for n in colnames]
+isdet1 = [str(n).lower().endswith('det1') for n in colnames]
+isdet2 = [str(n).lower().endswith('det2') for n in colnames]
+isdet3 = [str(n).lower().endswith('det3') for n in colnames]
 
 fitsname = sys.argv[2]
 with F.open(fitsname) as hdulist:
