@@ -8,6 +8,10 @@ wb = load_workbook(sys.argv[1], data_only=True)
 cfg = wb['cpmcfgWVLEN_Table.csv']
 fitskeys= [c.value for c in cfg.rows[5]] # 6th row has FITS header names
 setting_col = 2       # 3rd column is std setting name
+colnames = [c.value for c in cfg.rows[0]]
+isdet1 = [str(n).endswith('Det1') for n in colnames]
+isdet2 = [str(n).endswith('Det2') for n in colnames]
+isdet3 = [str(n).endswith('Det3') for n in colnames]
 
 fitsname = sys.argv[2]
 with F.open(fitsname) as hdulist:
@@ -23,23 +27,21 @@ with F.open(fitsname) as hdulist:
             continue
 
         values = [c.value for c in row]
-        for key,val in zip(fitskeys,values):
+        for key,val,d1,d2,d3 in zip(fitskeys,values,isdet1,isdet2,isdet3):
             if key and not '?' in key:
-                if not val: val=''
+                if val==None: val=''
                 for i,hdu in enumerate(hdulist):
                     chip = hdu.header.get('EXTNAME','0')[-1]
                     k = 'HIERARCH ESO '+key.replace('.',' ')
-                    wavekeys = ['STRT','CENY','END']
-                    wavekeychip = ['%s%s'%(foo,chip) for foo in wavekeys]
-                    if (not any(s in k for s in wavekeys)) and (chip=='0'):
+                    if d1 and chip=='1':
                         hdu.header[k] = val
-                    elif any(s in k for s in wavekeychip):
+                    elif d2 and chip=='2':
+                        hdu.header[k] = val
+                    elif d3 and chip=='3':
                         hdu.header[k] = val
 
+                    elif (chip=='0') and not (d1 or d2 or d3):
+                        hdu.header[k] = val
 
-#                    for s in wavekeychip:
-#                        if s+'%s'%i in k:
-#                            k=k.replace(s+'%s'%i, s)
-#                            hdu.header[k] = val
 
     hdulist.writeto(fitsname, overwrite=True)
