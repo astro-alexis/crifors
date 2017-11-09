@@ -22,6 +22,13 @@ with F.open(fitsname) as hdulist:
         print("The input file has no standard-setting info!")
         sys.exit()
 
+    # clear WLEN headers
+    for i in range(10):
+        for hdu in hdulist:
+            for key in hdu.header.keys():
+                if 'WLEN' in key:
+                    del hdu.header[key]
+
     for row in cfg.rows:
         if row[setting_col].value != std:
             continue
