@@ -28,7 +28,7 @@ for i,h in enumerate(hdulist[1:]):
     nx,ny = h.header['NAXIS1'], h.header['NAXIS2']
     assert nx == ny == DETSIZE
 
-    rotAng = hdrs[SIMHEAD+DETNAME[i]+' TAU'] *-1/2.
+    rotAng = hdrs[SIMHEAD+DETNAME[i]+' TAU'] *-1
     xoff = hdrs[SIMHEAD+DETNAME[i]+' XD0'] / DETPIX
     yoff = hdrs[SIMHEAD+DETNAME[i]+' YD0'] / DETPIX
     cenX, cenY = i*DETSIZE + (DETSIZE/2) + xoff, DETSIZE/2 + yoff

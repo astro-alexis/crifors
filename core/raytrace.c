@@ -132,10 +132,10 @@ void raytrace_interp_bin(
     yd = ym + (sy*sh);
 
     /* LEFT DETECTOR */
-    xdp =  xd-XDL_0 + (xd-XDL_0)*cos(TAUDL) + (yd-YDL_0)*sin(TAUDL);
-    ydp =  yd-YDL_0 - (xd-XDL_0)*sin(TAUDL) + (yd-YDL_0)*cos(TAUDL);
-    xdp /= (DPIX*2.0);  // NOT QUITE SURE WHY WE NEED THIS
-    ydp /= (DPIX*2.0);
+    xdp = + (xd-XDL_0)*cos(TAUDL) + (yd-YDL_0)*sin(TAUDL);
+    ydp = - (xd-XDL_0)*sin(TAUDL) + (yd-YDL_0)*cos(TAUDL);
+    xdp /= (DPIX);  // NOT QUITE SURE WHY WE NEED THIS
+    ydp /= (DPIX);
     ix = (int)floor(xdp + X_OFF_L);
     if (ix >= 0 && ix < NXPIX_1_3) {
       iy = (int)floor(ydp + YPIX_1_2);
@@ -145,10 +145,10 @@ void raytrace_interp_bin(
       }
     }
     /* MIDDLE DETECTOR */
-    xdp = xd-XDM_0 + (xd-XDM_0)*cos(TAUDM) + (yd-YDM_0)*sin(TAUDM);
-    ydp = yd-YDM_0 - (xd-XDM_0)*sin(TAUDM) + (yd-YDM_0)*cos(TAUDM);
-    xdp /= (DPIX*2.0);
-    ydp /= (DPIX*2.0);
+    xdp = + (xd-XDM_0)*cos(TAUDM) + (yd-YDM_0)*sin(TAUDM);
+    ydp = - (xd-XDM_0)*sin(TAUDM) + (yd-YDM_0)*cos(TAUDM);
+    xdp /= (DPIX);
+    ydp /= (DPIX);
     ix = (int)floor(xdp + X_OFF_M);
     if (ix >= NXPIX_1_3 && ix < NXPIX_2_3) {
       iy = (int)floor(ydp + YPIX_1_2);
@@ -158,10 +158,10 @@ void raytrace_interp_bin(
       }
     }
     /* RIGHT DETECTOR */
-    xdp = xd-XDR_0 + (xd-XDR_0)*cos(TAUDR) + (yd-YDR_0)*sin(TAUDR);
-    ydp = yd-YDR_0 - (xd-XDR_0)*sin(TAUDR) + (yd-YDR_0)*cos(TAUDR);
-    xdp /= (DPIX*2.0);
-    ydp /= (DPIX*2.0);
+    xdp = + (xd-XDR_0)*cos(TAUDR) + (yd-YDR_0)*sin(TAUDR);
+    ydp = - (xd-XDR_0)*sin(TAUDR) + (yd-YDR_0)*cos(TAUDR);
+    xdp /= (DPIX);
+    ydp /= (DPIX);
     ix = (int)floor(xdp + X_OFF_R);
     if (ix >= NXPIX_2_3 && ix < NXPIX) {
       iy = (int)floor(ydp + YPIX_1_2);
