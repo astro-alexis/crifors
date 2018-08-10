@@ -148,9 +148,9 @@ def add_classifier_keywords(header, sim):
     log.info("Adding classifier keywords.")
 
     # Treat BAND Information
-    header['HIERARCH ESO INS CDU BAND'] = (sim.band, 'Band name for the cross-disperser')
+    header['HIERARCH ESO INS GRAT2 NAME'] = (sim.band, 'Band name for the cross-disperser')
     header['HIERARCH ESO INS WLEN ID'] = (sim.StandardSetting, 'Fixed echelle settings')
-    header['HIERARCH ESO INS GRAT ANG'] = (sim.echang, 'Fixed echelle settings')
+    header['HIERARCH ESO INS GRAT1 POS'] = (sim.echang, 'Fixed echelle settings')
 
     # Treat SCIENCE or CALIB
     spec = sim.source[0].upper()
@@ -163,17 +163,14 @@ def add_classifier_keywords(header, sim):
     psf = sim.psf.lower()
     if psf.startswith('decker'):
         if psf.endswith('1'):
-            header['HIERARCH ESO INS SLIT2 DECKER'] = ('1', 'Decker layout (position)')
+            header['HIERARCH ESO INS OPTI8 ENC'] = (5010, 'Decker layout (position)')
         elif psf.endswith('1'):
-            header['HIERARCH ESO INS SLIT2 DECKER'] = ('2', 'Decker layout (position)')
+            header['HIERARCH ESO INS OPTI8 ENC'] = (6010, 'Decker layout (position)')
     else:
-        header['HIERARCH ESO INS SLIT2 DECKER'] = ('0', 'Decker layout (position)')
+        header['HIERARCH ESO INS OPTI8 ENC'] = (7010, 'Decker layout (position)')
 
     if spec == 'F':
-        if psf == 'uniform':
-            header['HIERARCH ESO DPR TYPE'] = ('FLAT,OPEN', 'Observation type')
-        elif psf.startswith('decker'):
-            header['HIERARCH ESO DPR TYPE'] = ('FLAT,DECKER', 'Observation type')
+        header['HIERARCH ESO DPR TYPE'] = ('FLAT', 'Observation type')
 
 
 def add_default_keywords(header):
@@ -181,16 +178,14 @@ def add_default_keywords(header):
     header['HIERARCH ESO INS FILT1 ENC'] = ('2666', 'Absolute position [Enc]')
     header['HIERARCH ESO INS FILT1 NAME'] = ('Ks', 'Element name')
     header['HIERARCH ESO INS FILT1 NO'] = (5, 'Element number')
-    header['HIERARCH ESO INS GRAT ENC'] = (71999, 'Absolute position [Enc]')
-    header['HIERARCH ESO INS GRAT ORDER'] = (12, 'Grating order')
-    header['HIERARCH ESO INS CDU ENC']  = ('', 'Angle for the cross-disperser')
-    header['HIERARCH ESO INS CDU ORDER'] = ('', 'Order for the cross-disperser') # PROBABLY OBSOLETE
+    header['HIERARCH ESO INS GRAT1 ENC'] = (71999, 'Absolute position [Enc]')
+    header['HIERARCH ESO INS GRAT1 ORDER'] = (12, 'Grating order')
+    header['HIERARCH ESO INS GRAT2 ENC']  = ('', 'Angle for the cross-disperser')
     header['HIERARCH ESO INS SLIT1 ENC'] = (5564, 'Absolute position [Enc]')
     header['HIERARCH ESO INS SLIT1 POS'] = (0.201, 'Position [arcsec]')
     header['HIERARCH ESO INS SLIT1 WID'] = (0.210, 'Slit width [arcsec]')
-    header['HIERARCH ESO INS SLIT2 ENC'] = (5010, 'Absolute position [Enc]')
-    header['HIERARCH ESO INS SLIT2 POS'] = (0.570, 'Position [mm]')
-    header['HIERARCH ESO INS POL ANGLE'] = ('', 'Polarimeter rotation angle (0 or 180)')
+    header['HIERARCH ESO INS OPTI8 ENC'] = (5010, 'Absolute position [Enc]')
+    header['HIERARCH ESO INS ROT5 POSNAME'] = ('', 'Polarimeter rotation angle (0 or 180)')
     header['HIERARCH ESO DET CON OPMODE'] = ('NORMAL', 'Operational Mode')
     header['HIERARCH ESO DET DIT'] = (10.0, 'Integration Time')
     header['HIERARCH ESO DET FRAM NO'] = (1, 'Frame number')
@@ -198,7 +193,6 @@ def add_default_keywords(header):
     header['HIERARCH ESO DET NDIT'] = (6, '# of Sub-Integrations')
     header['HIERARCH ESO OBS TARG NAME'] = ('unknown', 'OB target name')
     header['HIERARCH ESO INS MODE'] = ('Unknown', 'Instrument mode')
-    header['HIERARCH ESO INS POL POS'] = ('Unknown', 'Polarimeter selection')
     header['HIERARCH ESO DPR TECH'] = ('SPECTRUM')
 
 
