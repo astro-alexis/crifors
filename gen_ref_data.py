@@ -13,17 +13,17 @@ NRAYS = '5E8'
 OPTS = ['--spread', '--nrays=%s'%NRAYS, '--blaze', '--noise']
 
 setups = [\
-#['P','gaussian'],
-#['P','polarimeter'],
+['P','gaussian'],
+['P','polarimeter'],
 #['P','uniform'],
 ['F','uniform'],
-#['F','decker1'],
+['F','decker1'],
 #['F','decker2'],
-#['E','uniform'],
-#['E','decker1'],
+['E','uniform'],
+['E','decker1'],
 #['E','decker2'],
-#['T','uniform'],
-#['T','decker1'],
+['T','uniform'],
+['T','decker1'],
 #['T','decker2'],
 #['G','uniform'],
 #['G','decker1'],
@@ -71,7 +71,7 @@ def work(cmd):
 print cmd_list
 
 
-pool = multiprocessing.Pool(6)
+pool = multiprocessing.Pool(5)
 
 pool.map(work, cmd_list)
 
