@@ -9,9 +9,6 @@ cfg = wb['cpmcfgWVLEN_Table.csv']
 fitskeys= [c.value for c in cfg.rows[5]] # 6th row has FITS header names
 setting_col = 2       # 3rd column is std setting name
 colnames = [c.value for c in cfg.rows[0]]
-isdet1 = [str(n).lower().endswith('det1') for n in colnames]
-isdet2 = [str(n).lower().endswith('det2') for n in colnames]
-isdet3 = [str(n).lower().endswith('det3') for n in colnames]
 
 fitsname = sys.argv[2]
 with F.open(fitsname) as hdulist:
@@ -34,22 +31,25 @@ with F.open(fitsname) as hdulist:
             continue
 
         values = [c.value for c in row]
-        for key,val,d1,d2,d3 in zip(fitskeys,values,isdet1,isdet2,isdet3):
+        for key,val in zip(fitskeys,values):
+            if not key: continue
+            tmp = key.split(':')
+            if len(tmp)==1: # no prefix means primary header
+                det = None
+            elif len(tmp)==2: # extension is given before colon
+                det,key = tmp
+            else:
+                raise ValueError('Unknown key format')
             if key and not '?' in key:
                 if val==None or val=='':
-                    continue #skip key of no value!
+                    continue #skip key if no value!
 
                 for i,hdu in enumerate(hdulist):
                     chip = hdu.header.get('EXTNAME','0')[-1]
                     k = 'HIERARCH ESO '+key.replace('.',' ')
-                    if d1 and chip=='1':
+                    if det == chip:
                         hdu.header[k] = val
-                    elif d2 and chip=='2':
-                        hdu.header[k] = val
-                    elif d3 and chip=='3':
-                        hdu.header[k] = val
-
-                    elif (chip=='0') and not (d1 or d2 or d3):
+                    elif det is None:
                         hdu.header[k] = val
 
 
