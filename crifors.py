@@ -188,6 +188,11 @@ def main(log, argv):
     # RUN SIMULATION
     simulator.run()
 
+    # FLIP / REVERSE Y-axis in output, because that's how the dectector is read
+    #print(simulator.outarr.shape)
+    simulator.outarr = simulator.outarr[::-1,:]
+    simulator.outwaves = simulator.outwaves[::-1,:]
+
     # SPREAD OUT EACH RAY
     if args["--spread"]:
         simulator.spreadout()

@@ -9,6 +9,7 @@
 *.kate-swp
 *.swo
 *.swp
+.vscode
 data/codevtrace/parsed/*
 output/*
 logs/*

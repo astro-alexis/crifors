@@ -169,12 +169,9 @@ class Simulator(object):
 
         #self.outwaves[inds] /= self.outarr[inds]
 
-        # Because we get errors from inds if no rays hit the detectors.
-        # For wavemap, overwrite outarray with wavelengths
-        if (self.wavemap==True):
-            self.outwaves /= self.outarr				# Normalise wavelengths
-            self.outwaves[np.isnan(self.outwaves)]=0	# Remove eventual NaNs
-            self.outarr = self.outwaves
+        self.outwaves /= self.outarr				# Normalise wavelengths
+        self.outwaves[np.isnan(self.outwaves)]=0	# Remove eventual NaNs
+      
 
 
     # =========================[ initfuncs ]===================================

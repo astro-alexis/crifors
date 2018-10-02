@@ -203,9 +203,10 @@ def write_to_fits(sim, gzip=False):
     """
 
     if sim.wavemap:
-        sim.outarr = sim.outwaves
+        outarr = sim.outwaves
         dtype = np.float
     else:
+        outarr = sim.outarr
         dtype = np.int16
 
     # CREATE OUTPUT PATH
@@ -213,7 +214,7 @@ def write_to_fits(sim, gzip=False):
 
     # create PrimaryHDU object to encapsulate data
     log.info("Creating HDU...")
-    hdu = fits.PrimaryHDU()#np.asarray(sim.outarr, dtype=dtype))
+    hdu = fits.PrimaryHDU()
     header = hdu.header
 
     add_default_keywords(header)
@@ -221,11 +222,11 @@ def write_to_fits(sim, gzip=False):
     add_simulation_keywords(header, sim)
 
     # create ImageHDU objects for detector images
-    hdu_dl = fits.ImageHDU(np.asarray(sim.outarr[:, :sim.nxpix],dtype=dtype),
+    hdu_dl = fits.ImageHDU(np.asarray(outarr[:, :sim.nxpix],dtype=dtype),
                 header=fits.Header({'EXTNAME':'CHIP1'}))
-    hdu_dm = fits.ImageHDU(np.asarray(sim.outarr[:, sim.nxpix:2*sim.nxpix], dtype=dtype),
+    hdu_dm = fits.ImageHDU(np.asarray(outarr[:, sim.nxpix:2*sim.nxpix], dtype=dtype),
                 header=fits.Header({'EXTNAME':'CHIP2'}))
-    hdu_dr = fits.ImageHDU(np.asarray(sim.outarr[:, 2*sim.nxpix:3*sim.nxpix],dtype=dtype),
+    hdu_dr = fits.ImageHDU(np.asarray(outarr[:, 2*sim.nxpix:3*sim.nxpix],dtype=dtype),
                 header=fits.Header({'EXTNAME':'CHIP3'}))
     hdulist = fits.HDUList([hdu, hdu_dl, hdu_dm, hdu_dr])
 
