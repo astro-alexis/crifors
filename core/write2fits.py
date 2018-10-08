@@ -223,11 +223,11 @@ def write_to_fits(sim, gzip=False):
 
     # create ImageHDU objects for detector images
     hdu_dl = fits.ImageHDU(np.asarray(outarr[:, :sim.nxpix],dtype=dtype),
-                header=fits.Header({'EXTNAME':'CHIP1'}))
+                header=fits.Header({'EXTNAME':'CHIP1.INT1'}))
     hdu_dm = fits.ImageHDU(np.asarray(outarr[:, sim.nxpix:2*sim.nxpix], dtype=dtype),
-                header=fits.Header({'EXTNAME':'CHIP2'}))
+                header=fits.Header({'EXTNAME':'CHIP2.INT1'}))
     hdu_dr = fits.ImageHDU(np.asarray(outarr[:, 2*sim.nxpix:3*sim.nxpix],dtype=dtype),
-                header=fits.Header({'EXTNAME':'CHIP3'}))
+                header=fits.Header({'EXTNAME':'CHIP3.INT1'}))
     hdulist = fits.HDUList([hdu, hdu_dl, hdu_dm, hdu_dr])
 
 
