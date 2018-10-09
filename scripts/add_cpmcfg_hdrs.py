@@ -6,9 +6,10 @@ from openpyxl import load_workbook
 
 wb = load_workbook(sys.argv[1], data_only=True)
 cfg = wb['crmcfgWLEN.txt']
-fitskeys= [c.value for c in cfg.rows[5]] # 6th row has FITS header names
+rows=list(cfg.rows)
+fitskeys= [c.value for c in rows[5]] # 6th row has FITS header names
 setting_col = 2       # 3rd column is std setting name
-colnames = [c.value for c in cfg.rows[0]]
+colnames = [c.value for c in rows[0]]
 
 fitsname = sys.argv[2]
 with F.open(fitsname) as hdulist:
