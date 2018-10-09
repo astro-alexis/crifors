@@ -237,7 +237,7 @@ def write_to_fits(sim, gzip=False):
     except OSError:
         pass
     log.info("Writing HDU to '%s.fits'", sim.outpath)
-    hdulist.writeto('%s.fits' % sim.outpath, clobber=True)
+    hdulist.writeto('%s.fits' % sim.outpath, overwrite=True)
 
     # COMPRESS
     if gzip:
