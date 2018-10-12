@@ -9,9 +9,17 @@ if argv[0].startswith('-'):
 else:
     ext=0
 
-key=argv.pop(0)
+key=argv.pop(0).replace('.',' ')
 val=argv.pop(0)
-
+try:
+    i=int(val)
+    if '.' in val:
+        val = float(val)
+    else:
+        val = int(val)
+except:
+    pass
+print(type(val))
 for fname in argv:
     print(fname)
     f = fits.open(fname)
