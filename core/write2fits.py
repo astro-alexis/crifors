@@ -164,7 +164,7 @@ def add_classifier_keywords(header, sim):
     if psf.startswith('decker'):
         if psf.endswith('1'):
             header['HIERARCH ESO INS OPTI8 ENC'] = (6010, 'Decker layout (position)')
-        elif psf.endswith('1'):
+        elif psf.endswith('2'):
             header['HIERARCH ESO INS OPTI8 ENC'] = (7010, 'Decker layout (position)')
     else:
         header['HIERARCH ESO INS OPTI8 ENC'] = (5010, 'Decker layout (position)')
