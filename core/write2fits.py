@@ -143,6 +143,7 @@ def add_simulation_keywords(header, sim):
     header['HIERARCH ESO SIMU INV GAIN'] = (sim.inv_gain, '[e-/DN] inverse gain')
     header['HIERARCH ESO SIMU SIM TIME'] = (TIME, '[s] simulation time')
     header['HIERARCH ESO SIMU SPREAD'] = (sim.spread, 'Each pixel convolved with a kernel.')
+    header['HIERARCH ESO DET SEQ1 DIT'] = (sim.tobs, 'Integration Time')
 
 def add_classifier_keywords(header, sim):
     log.info("Adding classifier keywords.")
@@ -187,10 +188,9 @@ def add_default_keywords(header):
     header['HIERARCH ESO INS OPTI8 ENC'] = (5010, 'Absolute position [Enc]')
     header['HIERARCH ESO INS ROT5 POSNAME'] = ('', 'Polarimeter rotation angle (0 or 180)')
     header['HIERARCH ESO DET CON OPMODE'] = ('NORMAL', 'Operational Mode')
-    header['HIERARCH ESO DET DIT'] = (10.0, 'Integration Time')
     header['HIERARCH ESO DET FRAM NO'] = (1, 'Frame number')
     header['HIERARCH ESO DET FRAM TYPE'] = ('INT', 'Frame type')
-    header['HIERARCH ESO DET NDIT'] = (6, '# of Sub-Integrations')
+    header['HIERARCH ESO DET NDIT'] = (1, '# of Sub-Integrations')
     header['HIERARCH ESO OBS TARG NAME'] = ('unknown', 'OB target name')
     header['HIERARCH ESO INS MODE'] = ('Unknown', 'Instrument mode')
     header['HIERARCH ESO DPR TECH'] = ('SPECTRUM')

@@ -33,7 +33,7 @@ def dark_current(sig_dn, t, shape, det=None):
     else:
         det_str = ":"
     log.info("Adding dark noise%s rms = %s [e-].", det_str, sig_dn)
-    return np.random.normal(scale=sig_dn*t, size=shape)
+    return np.random.normal(loc=sig_dn*t, scale=np.sqrt(sig_dn*t),size=shape)
 
 def gain(arr, invg):
     log.info("Converting e- to DN, gain = %s [DN / e-].", 1./invg)
