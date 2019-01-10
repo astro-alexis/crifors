@@ -11,14 +11,16 @@ else:
 
 key=argv.pop(0).replace('.',' ')
 val=argv.pop(0)
-try:
-    i=int(val)
-    if '.' in val:
+if '.' in val:
+    try:
         val = float(val)
-    else:
+    except:
+        pass
+else:
+    try:
         val = int(val)
-except:
-    pass
+    except:
+        pass
 print(type(val))
 for fname in argv:
     print(fname)
