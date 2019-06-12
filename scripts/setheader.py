@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
-from sys import argv
+from sys import argv, exit
 import astropy.io.fits as fits
+
+if len(argv) < 4:
+    print("./setheader Some.Key value fname [fname ...]")
+    exit(0)
 
 argv.pop(0)
 if argv[0].startswith('-'):
@@ -9,7 +13,7 @@ if argv[0].startswith('-'):
 else:
     ext=0
 
-key=argv.pop(0).replace('.',' ')
+key=argv.pop(0).replace('.',' ').upper()
 val=argv.pop(0)
 if '.' in val:
     try:

@@ -46,12 +46,11 @@ with F.open(fitsname) as hdulist:
                     continue #skip key if no value!
 
                 for i,hdu in enumerate(hdulist):
-                    chip = hdu.header.get('EXTNAME','0')[-1]
                     k = 'HIERARCH ESO '+key.replace('.',' ')
-                    if det == chip:
+                    if det is None:
                         hdu.header[k] = val
-                    elif det is None:
+                    elif hdu.header.get('EXTNAME') == 'CHIP%s.INT1'%det:
                         hdu.header[k] = val
-
+                    
 
     hdulist.writeto(fitsname, overwrite=True)
