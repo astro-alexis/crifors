@@ -8,6 +8,7 @@ wb = load_workbook(sys.argv[1], data_only=True)
 cfg = wb['crmcfgWLEN.txt']
 rows=list(cfg.rows)
 fitskeys= [c.value for c in rows[5]] # 6th row has FITS header names
+types= [c.value for c in rows[3]] # 4th row has field type
 setting_col = 2       # 3rd column is std setting name
 colnames = [c.value for c in rows[0]]
 
@@ -32,7 +33,9 @@ with F.open(fitsname) as hdulist:
             continue
 
         values = [c.value for c in row]
-        for key,val in zip(fitskeys,values):
+        for key,val,typ in zip(fitskeys,values,types):
+            if typ == 'double' and val:
+                val=float(val)
             if not key: continue
             tmp = key.split(':')
             if len(tmp)==1: # no prefix means primary header
@@ -44,6 +47,8 @@ with F.open(fitsname) as hdulist:
             if key and not '?' in key:
                 if val==None or val=='':
                     continue #skip key if no value!
+                if 'CENY' in key:
+                    print(type(val),val)
 
                 for i,hdu in enumerate(hdulist):
                     k = 'HIERARCH ESO '+key.replace('.',' ')
