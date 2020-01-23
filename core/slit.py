@@ -209,7 +209,7 @@ def slit_polarimeter_psf(n, mu_x, mu_y, sig_x, sig_y, tau_0, slit_width, slit_he
     slit_x1, slit_y1 = slit_gaussian_psf(\
                 n //2 + n%2,
                 mu_x,
-                mu_y - (slit_height/4),
+                mu_y - (slit_height/5),
                 sig_x,
                 sig_y,
                 tau_0,
@@ -220,7 +220,7 @@ def slit_polarimeter_psf(n, mu_x, mu_y, sig_x, sig_y, tau_0, slit_width, slit_he
     slit_x2, slit_y2 = slit_gaussian_psf(\
                 n //2,
                 mu_x,
-                mu_y + (slit_height/4),
+                mu_y + (slit_height/5),
                 sig_x,
                 sig_y,
                 tau_0,
